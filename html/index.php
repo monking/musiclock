@@ -3,10 +3,11 @@
 <html>
 	<head>
 		<title>MusiClock</title>
-		<script type="text/javascript" src="js/main.js"></script>
+		<script type="text/javascript" src="js/playlist.js"></script>
 		<link type="text/css" rel="stylesheet" href="css/main.css" />
+		<script>var list = new Playlist(<?=json_encode($pl->list)?>);window.onload=function(){list.checkTime();};</script>
 	</head>
 	<body>
-		<?php print_r($pl->list); ?>
+		<section id="list"></section>
 	</body>
 </html>
