@@ -17,22 +17,23 @@ class Playlist {
 	private function buildPlaylist() {
 		$this->list = array();
 		$all_handle = opendir($this->audio_dir);
-		while ($attitude = readdir($all_handle)) {
-			if ($attitude == '.' || $attitude == '..') continue;
-			$attitude_handle = opendir($this->audio_dir . '/' . $attitude);
-			$this->list[$attitude] = array();
-			while ($hour = readdir($attitude_handle)) {
+		while ($mood = readdir($all_handle)) {
+			if ($mood == '.' || $mood == '..') continue;
+			$mood_handle = opendir($this->audio_dir . '/' . $mood);
+			$this->list[$mood] = array();
+			while ($hour = readdir($mood_handle)) {
 				if ($hour == '.' || $hour == '..') continue;
-				$hour_handle = opendir($this->audio_dir . '/' . $attitude . '/' . $hour);
-				$this->list[$attitude][$hour] = array();
+				$hour_handle = opendir($this->audio_dir . '/' . $mood . '/' . $hour);
+				$this->list[$mood][$hour] = array();
 				while ($file = readdir($hour_handle)) {
 					if ($file == '.' || $file == '..') continue;
-					$this->list[$attitude][$hour][] = $file;
+					$this->list[$mood][$hour][] = $file;
 				}
 				closedir($hour_handle);
+				sort($this->list[$mood][$hour]);
 			}
-			closedir($attitude_handle);
-			ksort($this->list[$attitude]);
+			closedir($mood_handle);
+			ksort($this->list[$mood]);
 		}
 		closedir($all_handle);
 	}
