@@ -17,18 +17,24 @@ class Playlist {
 	private function buildPlaylist() {
 		$this->list = array();
 		$all_handle = opendir($this->audio_dir);
-		while ($hour = readdir($all_handle)) {
-			if ($hour == '.' || $hour == '..') continue;
-			$hour_handle = opendir($this->audio_dir . '/' . $hour);
-			$this->list[$hour] = array();
-			while ($file = readdir($hour_handle)) {
-				if ($file == '.' || $file == '..') continue;
-				$this->list[$hour][] = $file;
+		while ($attitude = readdir($all_handle)) {
+			if ($attitude == '.' || $attitude == '..') continue;
+			$attitude_handle = opendir($this->audio_dir . '/' . $attitude);
+			$this->list[$attitude] = array();
+			while ($hour = readdir($attitude_handle)) {
+				if ($hour == '.' || $hour == '..') continue;
+				$hour_handle = opendir($this->audio_dir . '/' . $attitude . '/' . $hour);
+				$this->list[$attitude][$hour] = array();
+				while ($file = readdir($hour_handle)) {
+					if ($file == '.' || $file == '..') continue;
+					$this->list[$attitude][$hour][] = $file;
+				}
+				closedir($hour_handle);
 			}
-			closedir($hour_handle);
+			closedir($attitude_handle);
+			ksort($this->list[$attitude]);
 		}
 		closedir($all_handle);
-		ksort($this->list);
 	}
 
 }

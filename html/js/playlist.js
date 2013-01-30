@@ -4,7 +4,15 @@ var Playlist = function(list) {
 };
 Playlist.prototype = {
 	init: function() {
+		this.attitudeKey = null;
 		this.setKey = null;
+		this.trackKey = null;
+	},
+	setAttitude: function(attitude) {
+		if (!this.list.hasOwnProperty(attitude))
+			return;
+		this.attitudeKey = attitude;
+		this.checkTime();
 	},
 	/*
 	 * checks the time against the list keys, and automatically repeats on the
@@ -13,6 +21,7 @@ Playlist.prototype = {
 	 * expects keys like "1500" to mean 15:00 or 3:00pm
 	 */
 	checkTime: function() {
+		clearTimeout(this.timeout);
 		var $this = this;
 		var now = new Date();
 		var hour = now.getHours().toString() + now.getMinutes().toString();
@@ -37,24 +46,32 @@ Playlist.prototype = {
 	 * (ignores empty sets)
 	 */
 	getNearestSetKeys: function(hour) {
-		var keys = [];
-		for (var time in this.list) {
-			if (!this.list[time].length) continue;
-			if (time <= hour) {
-				keys[0] = time;
+		var key, keys = [];
+		if (!this.attitudeKey) {
+			for (key in this.list) {
+				this.attitudeKey = key;
+				break;
+			}
+		}
+		for (key in this.list[this.attitudeKey]) {
+			if (!this.list[this.attitudeKey][key].length) continue;
+			if (key <= hour) {
+				keys[0] = key;
 			} else {
-				keys[1] = time;
+				keys[1] = key;
 				break;
 			}
 		}
 		return keys;
 	},
 	markupSet: function() {
-		var markup = '', i, set = this.list[this.setKey];
+		var $this = this,
+			markup = '',
+			set = this.list[this.attitudeKey][this.setKey];
 
 		for (var i = 0; i < set.length; i++) {
 			var file = set[i];
-			var id = this.setKey + '-' + i;
+			var id = 'track_' + i;
 			markup += '<label for="' + id + '">' + file + '</label>'
 			+ '<audio id="' + id + '" controls>'
 			+ '	<source src="audio/' + this.setKey + '/' + file + '" />'
@@ -63,23 +80,40 @@ Playlist.prototype = {
 		var list = document.getElementById('list');
 		list.innerHTML = markup;
 		var players = list.getElementsByTagName('audio');
-		for (i = 0; i < players.length; i++) {
+		for (var i = 0; i < players.length; i++) {
 			(function(i) {
 				players[i].addEventListener('play', function() {
+					$this.trackKey = i;
 					for (var j = 0; j < players.length; j++) {
-						if (i != j) players[j].pause();
+						if (i != j) {
+							var player = players[j];
+							if (player.currentTime > 0) {
+								player.currentTime = 0;
+							}
+							player.pause();
+						}
 					}
 				});
 				players[i].addEventListener('ended', function() {
-					var index = this.id.replace(/\d{4}-(\d+)/, '$1');
-					index = (index + 1) % players.length;
-					players[index].play();
+					$this.next();
 				});
 			})(i);
 		}
-		this.startSet();
+		this.next();
 	},
-	startSet: function() {
-		document.getElementById(this.setKey + '-0').play();
+	next: function() {
+		if (this.trackKey !==  null) {
+			this.trackKey = (this.trackKey + 1) % this.list[this.attitudeKey][this.setKey].length;
+		} else {
+			this.trackKey = 0;
+		}
+		document.getElementById('track_' + this.trackKey).play();
+	},
+	/*
+	 * add listeners on control element's children, by class
+	 */
+	setListControls: function(element) {
+		var $this = this;
+		element.getElementsByClassName('next')[0].onclick = function() { $this.next(); };
 	}
 };
