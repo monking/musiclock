@@ -50,17 +50,33 @@ Playlist.prototype = {
 		return keys;
 	},
 	markupSet: function() {
-		var markup = '';
-		var set = this.list[this.setKey];
+		var markup = '', i, set = this.list[this.setKey];
+
 		for (var i = 0; i < set.length; i++) {
 			var file = set[i];
 			var id = this.setKey + '-' + i;
 			markup += '<label for="' + id + '">' + file + '</label>'
-			+ '<audio id="' + id + '" controls loop>'
+			+ '<audio id="' + id + '" controls>'
 			+ '	<source src="audio/' + this.setKey + '/' + file + '" />'
 			+ '</audio>';
 		}
-		document.getElementById('list').innerHTML = markup;
+		var list = document.getElementById('list');
+		list.innerHTML = markup;
+		var players = list.getElementsByTagName('audio');
+		for (i = 0; i < players.length; i++) {
+			(function(i) {
+				players[i].addEventListener('play', function() {
+					for (var j = 0; j < players.length; j++) {
+						if (i != j) players[j].pause();
+					}
+				});
+				players[i].addEventListener('ended', function() {
+					var index = this.id.replace(/\d{4}-(\d+)/, '$1');
+					index = (index + 1) % players.length;
+					players[index].play();
+				});
+			})(i);
+		}
 		this.startSet();
 	},
 	startSet: function() {
