@@ -1,4 +1,9 @@
 <?php
+function comparePlaylists($a, $b) {
+	if ($a['hour'] === $b['hour']) return 0;
+	return ($a['hour'] < $b['hour']) ? -1 :  1;
+}
+
 class Playlist {
 
 	public $list;
@@ -22,18 +27,22 @@ class Playlist {
 			$mood_handle = opendir($this->audio_dir . '/' . $mood);
 			$this->list[$mood] = array();
 			while ($hour = readdir($mood_handle)) {
+				$playlist = array(
+					'hour' => $hour,
+					'list' => array()
+				);
 				if ($hour == '.' || $hour == '..') continue;
 				$hour_handle = opendir($this->audio_dir . '/' . $mood . '/' . $hour);
-				$this->list[$mood][$hour] = array();
 				while ($file = readdir($hour_handle)) {
 					if ($file == '.' || $file == '..') continue;
-					$this->list[$mood][$hour][] = $file;
+					$playlist['list'][] = $file;
 				}
 				closedir($hour_handle);
-				sort($this->list[$mood][$hour]);
+				sort($playlist['list']);
+				$this->list[$mood][] = $playlist;
 			}
 			closedir($mood_handle);
-			ksort($this->list[$mood]);
+			usort($this->list[$mood], 'comparePlaylists');
 		}
 		closedir($all_handle);
 	}

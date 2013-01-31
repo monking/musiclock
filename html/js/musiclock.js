@@ -8,7 +8,7 @@ MusiClock.prototype = {
 			var mood = this.getFirstMood();
 			this.update({
 				mood: mood,
-				playlist: this.getFirstPlaylist(mood),
+				playlist: 0,
 				track: 0,
 				time: 0,
 				volume: 1,
@@ -60,13 +60,19 @@ MusiClock.prototype = {
 				this.state[key] = parameters[key];
 				switch(key) {
 					case "mood":
+						if (!this.list.hasOwnProperty(this.state.mood))
+							this.state.mood = this.getFirstMood();
+						this.checkTime();
 						document.getElementById('moods').value = this.state.mood;
+						break;
+					case "playlist":
+						this.state.time = 0;
+						if (!this.list[this.state.mood].hasOwnProperty(this.state.playlist))
+							this.state.playlist = 0;
 						break;
 				}
 			}
 		}
-		if (!this.state.mood) this.state.mood = this.getFirstMood();
-		if (!this.state.playlist) this.state.playlist = this.getFirstPlaylist();
 		if (drawRequired) {
 			this.markupPlaylist();
 			this.gotoTrack(this.state.track);
@@ -100,23 +106,31 @@ MusiClock.prototype = {
 	 * expects keys like "1500" to mean 15:00 or 3:00pm
 	 */
 	checkTime: function() {
-		var $this = this, now = new Date(), hour, key, keys = [], nextHour, nextTime, wait;
+		var $this = this, now = new Date(), hour, key, keys = [], nextHour,
+			nextTime, wait;
 
 		clearTimeout(this.timeout);
 
 		hour = now.getHours().toString() + now.getMinutes().toString();
-		for (key in this.list[this.state.mood]) {
-			if (!this.list[this.state.mood][key].length) continue;
-			if (key <= hour) { keys[0] = key; }
-			else             { keys[1] = key; break; }
+		for (var i = 0; i < this.list[this.state.mood].length; i++) {
+			var playlist = this.list[this.state.mood][i];
+			if (!playlist.list.length) continue;
+			if (playlist.hour <= hour) { keys[0] = i; }
+			else             { keys[1] = i; break; }
 		}
 
 		if (keys.length && keys[0] !== this.state.playlist) {
-			this.update({playlist: keys[0]});
+			this.fadeVolume(0, 1, function() {
+				$this.update({playlist: keys[0]});
+				setTimeout(function() {
+					$this.fadeVolume($this.state.volume);
+				}, 0);
+			}, 0);
 		}
 
 		if (keys.length > 1) {
-			nextHour = keys[1].substr(0,2) + ':' + keys[1].substr(2,2) + ':00';
+			nextHour = this.list[this.state.mood][keys[1]].hour;
+			nextHour = nextHour.substr(0,2) + ':' + nextHour.substr(2,2) + ':00';
 			nextTime = (new Date(now.toString().replace(/\d\d:\d\d:\d\d/, nextHour))).getTime();
 			wait = nextTime - now.getTime();
 			this.timeout = setTimeout(function() {
@@ -130,12 +144,12 @@ MusiClock.prototype = {
 			playlist = this.list[this.state.mood][this.state.playlist];
 
 		markup += '<h2>' + this.state.mood + '</h2>';
-		for (var i = 0; i < playlist.length; i++) {
-			var file = playlist[i];
+		for (var i = 0; i < playlist.list.length; i++) {
+			var file = playlist.list[i];
 			var id = 'track_' + i;
 			markup += '<label for="' + id + '">' + file + '</label>'
-			+ '<audio id="' + id + '" controls>'
-			+ '	<source src="audio/' + this.state.mood + '/' + this.state.playlist + '/' + file + '" />'
+			+ '<audio id="' + id + '" controls preload>'
+			+ '	<source src="audio/' + this.state.mood + '/' + playlist.hour + '/' + file + '" />'
 			+ '</audio>';
 		}
 		var list = document.getElementById('list');
@@ -155,10 +169,6 @@ MusiClock.prototype = {
 					for (var j = 0; j < players.length; j++) {
 						if (i != j) {
 							var player = players[j];
-							player.pause();
-							if (player.currentTime > 0) {
-								player.currentTime = 0;
-							}
 						}
 					}
 					// FIXME: messy way to revert outside closure, after event
@@ -166,7 +176,7 @@ MusiClock.prototype = {
 					setTimeout(function() { $this.state.insidePlay = false; }, 0);
 				});
 				players[i].addEventListener('pause', function() {
-					if (!$this.state.insidePlay) {
+					if (!$this.state.insidePlay && !$this.fadeVolumeInterval) {
 						console.log('pause ' + i);
 						$this.state.playing = false;
 					}
@@ -183,7 +193,8 @@ MusiClock.prototype = {
 					$this.nextTrack();
 				});
 				players[i].addEventListener('volumechange', function() {
-					$this.state.volume = this.state.volume;
+					if ($this.fadeVolumeInterval) return;
+					$this.state.volume = this.volume;
 				});
 			})(i);
 		}
@@ -191,16 +202,13 @@ MusiClock.prototype = {
 	getFirstMood: function() {
 		for (var mood in this.list) { return mood; }
 	},
-	getFirstPlaylist: function(mood) {
-		for (var playlist in this.list[mood || this.state.mood]) { return playlist; }
-	},
 	prevMood: function() {
 		var prevMood;
 		for (var mood in this.list) {
 			if (prevMood && mood == this.state.mood) break;
 			prevMood = mood;
 		}
-		this.update({mood: prevMood, playlist: null, track: 0, time: 0});
+		this.update({mood: prevMood});
 	},
 	nextMood: function() {
 		var firstMood, nextMood;
@@ -215,7 +223,7 @@ MusiClock.prototype = {
 				nextMood = mood;
 		}
 		if (mood == this.state.mood) nextMood = firstMood;
-		this.update({mood: nextMood, playlist: null, track: 0, time: 0});
+		this.update({mood: nextMood});
 	},
 	gotoTrack: function(index) {
 		this.state.track = index;
@@ -235,13 +243,29 @@ MusiClock.prototype = {
 		}
 	},
 	prevTrack: function() {
-		var setLength = this.list[this.state.mood][this.state.playlist].length;
+		var $this = this;
+		var setLength = this.list[this.state.mood][this.state.playlist].list.length;
 		index = (isNaN(this.state.track)) ? 0 : (this.state.track - 1 + setLength) % setLength;
+		this.fadeVolume(0, null, function() {
+			if (!this.pause) return;
+			this.pause();
+			if (this.currentTime > 0) {
+				this.currentTime = 0;
+			}
+		});
 		this.gotoTrack(index);
 	},
 	nextTrack: function() {
-		var setLength = this.list[this.state.mood][this.state.playlist].length;
+		var $this = this;
+		var setLength = this.list[this.state.mood][this.state.playlist].list.length;
 		index = (isNaN(this.state.track)) ? 0 : (this.state.track + 1) % setLength;
+		this.fadeVolume(0, null, function() {
+			if (!this.pause) return;
+			this.pause();
+			if (this.currentTime > 0) {
+				this.currentTime = 0;
+			}
+		});
 		this.gotoTrack(index);
 	},
 	togglePause: function() {
@@ -273,5 +297,47 @@ MusiClock.prototype = {
 
 		var next = element.getElementsByClassName('next')[0];
 		if (next) next.onclick = function() { $this.nextTrack(); };
+	},
+	getPlayingAudio: function() {
+		players = document.getElementsByTagName('audio');
+		for (var i = 0; i < players.length; i++) {
+			if (!players[i].paused) {
+				return players[i];
+			}
+		}
+	},
+	fadeVolume: function(fadeTo, duration, callback, fadeFrom) {
+		var $this = this, player, fadeIncrement, fadeStep, stopFade,
+			rate = 30, steps;
+		if (!duration)
+			duration = 0.5;
+		steps = Math.floor(rate * duration);
+		player = this.getPlayingAudio();
+		if (!player) {
+			if (typeof callback === "function")
+				callback.apply(false);
+			return;
+		}
+		if (typeof fadeFrom !== "undefined")
+			player.volume = fadeFrom;
+		else
+			fadeFrom = player.volume;
+		fadeTo = Math.max(0, Math.min(1, fadeTo));
+		fadeIncrement = (fadeTo - fadeFrom) / steps;
+		fadeStep = function() {
+			if (Math.abs(player.volume - fadeTo) < Math.abs(fadeIncrement)) {
+				player.volume = fadeTo;
+				clearInterval($this.fadeVolumeInterval);
+				if (typeof callback === "function")
+					callback.apply(player);
+				setTimeout(function() {
+					$this.fadeVolumeInterval = null;
+				}, 0);
+				return;
+			}
+			player.volume += fadeIncrement;
+		};
+		clearInterval(this.fadeVolumeInterval);
+		this.fadeVolumeInterval = setInterval(fadeStep, Math.round(1000 / rate));
 	}
 };
