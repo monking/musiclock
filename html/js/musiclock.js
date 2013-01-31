@@ -16,7 +16,7 @@ MusiClock.prototype = {
 		if (!this.restoreState()) {
 			var mood = this.getFirstMood();
 			this.update({
-				mood: mood,
+				mood: "working_pep",
 				playlist: 0,
 				track: 0,
 				time: 0,
@@ -56,10 +56,12 @@ MusiClock.prototype = {
 		clearInterval(this.stateInterval);
 	},
 	update: function(parameters) {
-		var diff, drawRequired, key, drawWorthy = ["mood","playlist"];
+		var oldState = {}, drawRequired, key, drawWorthy = ["mood","playlist"];
 		if (!this.state) {
 			this.state = parameters;
 			drawRequired = true;
+		} else {
+			oldState = JSON.parse(JSON.stringify(this.state));
 		}
 		for (key in parameters) {
 			if (this.state.hasOwnProperty(key)) {
@@ -71,6 +73,8 @@ MusiClock.prototype = {
 					case "mood":
 						if (!this.list.hasOwnProperty(this.state.mood))
 							this.state.mood = this.getFirstMood();
+						if (oldState.mood !== this.state.mood)
+							parameters.playlist = 0;
 						this.checkTime();
 						document.getElementById('moods').value = this.state.mood;
 						break;
@@ -79,13 +83,17 @@ MusiClock.prototype = {
 						if (!this.list[this.state.mood].hasOwnProperty(this.state.playlist))
 							this.state.playlist = 0;
 						break;
+					case "track":
+						if (oldState.track !== this.state.track)
+							this.killTrack(oldState.track);
+						break;
 				}
 			}
 		}
-		if (drawRequired) {
+		if (drawRequired)
 			this.markupPlaylist();
+		if (drawRequired || "track" in parameters)
 			this.gotoTrack(this.state.track);
-		}
 	},
 	attachHandlers: function() {
 		var $this = this;
@@ -172,14 +180,11 @@ MusiClock.prototype = {
 				});
 				players[i].addEventListener('play', function() {
 					console.log('play ' + i);
-					$this.state.track = i;
-					$this.state.playing = true;
-					$this.state.insidePlay = true;
-					for (var j = 0; j < players.length; j++) {
-						if (i != j) {
-							var player = players[j];
-						}
-					}
+					$this.update({
+						track: i,
+						playing: true,
+						insidePlay: true
+					});
 					// FIXME: messy way to revert outside closure, after event
 					// chain finishes
 					setTimeout(function() { $this.state.insidePlay = false; }, 0);
@@ -255,30 +260,28 @@ MusiClock.prototype = {
 		var $this = this;
 		var setLength = this.list[this.state.mood][this.state.playlist].list.length;
 		index = (isNaN(this.state.track)) ? 0 : (this.state.track - 1 + setLength) % setLength;
-		this.fadeVolume(0, null, function() {
-			if (!this.pause) return;
-			this.pause();
-			if (this.currentTime > 0) {
-				this.currentTime = 0;
-			}
-		});
-		this.gotoTrack(index);
+		this.update({track:index});
 	},
 	nextTrack: function() {
 		var $this = this;
 		var setLength = this.list[this.state.mood][this.state.playlist].list.length;
 		index = (isNaN(this.state.track)) ? 0 : (this.state.track + 1) % setLength;
-		this.fadeVolume(0, null, function() {
-			if (!this.pause) return;
-			this.pause();
-			if (this.currentTime > 0) {
-				this.currentTime = 0;
+		this.update({track:index});
+	},
+	killTrack: function(index) {
+		this.fadeVolume({
+			to:0,
+			callback:function() {
+				if (!this.pause) return;
+				this.pause();
+				if (this.currentTime > 0) {
+					this.currentTime = 0;
+				}
 			}
 		});
-		this.gotoTrack(index);
 	},
 	togglePause: function() {
-		var player = document.getElementById('track_' + this.state.track);
+		var player = this.getAudio(this.state.track);
 		player.paused ? player.play() : player.pause();
 	},
 	setVolume: function(volume) {
@@ -287,7 +290,7 @@ MusiClock.prototype = {
 		else
 			this.state.volume = volume;
 
-		var player = document.getElementById('track_' + this.state.track);
+		var player = this.getAudio(this.state.track);
 		if (player) player.volume = volume;
 	},
 	upVolume: function() {
@@ -315,30 +318,41 @@ MusiClock.prototype = {
 			}
 		}
 	},
-	fadeVolume: function(fadeTo, duration, callback, fadeFrom) {
+	getAudio: function(index) {
+		return document.getElementById('track_' + index);
+	},
+	fadeVolume: function(options) {
 		var $this = this, player, fadeIncrement, fadeStep, stopFade,
-			rate = 30, steps;
-		if (!duration)
-			duration = 0.5;
-		steps = Math.floor(rate * duration);
-		player = this.getPlayingAudio();
+			steps, defaults;
+		defaults = {
+			to: 1, duration: 0.5, rate: 30, callback: null, from: null, index: null
+		};
+		if (!options) options = defaults;
+		else {
+			for(var key in defaults) {
+				if (!options.hasOwnProperty(key))
+					options[key] = defaults[key];
+			}
+		}
+		steps = Math.floor(options.rate * options.duration);
+		player = (options.index !== null) ? this.getAudio(options.index) : this.getPlayingAudio();
 		if (!player) {
-			if (typeof callback === "function")
-				callback.apply(false);
+			if (typeof options.callback === "function")
+				options.callback.apply(false);
 			return;
 		}
-		if (typeof fadeFrom !== "undefined")
-			player.volume = fadeFrom;
+		if (typeof options.from !== "undefined" && options.from !== null)
+			player.volume = options.from;
 		else
-			fadeFrom = player.volume;
-		fadeTo = Math.max(0, Math.min(1, fadeTo));
-		fadeIncrement = (fadeTo - fadeFrom) / steps;
+			options.from = player.volume;
+		options.to = Math.max(0, Math.min(1, options.to));
+		fadeIncrement = (options.to - options.from) / steps;
 		fadeStep = function() {
-			if (Math.abs(player.volume - fadeTo) < Math.abs(fadeIncrement)) {
-				player.volume = fadeTo;
+			if (Math.abs(player.volume - options.to) < Math.abs(fadeIncrement)) {
+				player.volume = options.to;
 				clearInterval($this.fadeVolumeInterval);
-				if (typeof callback === "function")
-					callback.apply(player);
+				if (typeof options.callback === "function")
+					options.callback.apply(player);
 				setTimeout(function() {
 					$this.fadeVolumeInterval = null;
 				}, 0);
@@ -347,6 +361,6 @@ MusiClock.prototype = {
 			player.volume += fadeIncrement;
 		};
 		clearInterval(this.fadeVolumeInterval);
-		this.fadeVolumeInterval = setInterval(fadeStep, Math.round(1000 / rate));
+		this.fadeVolumeInterval = setInterval(fadeStep, Math.round(1000 / options.rate));
 	}
 };
