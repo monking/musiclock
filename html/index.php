@@ -5,7 +5,7 @@
 		<title>MusiClock</title>
 		<script type="text/javascript" src="js/musiclock.js"></script>
 		<link type="text/css" rel="stylesheet" href="css/main.css" />
-		<script>var mc = new MusiClock(<?=json_encode($pl->list)?>);window.onload=function(){mc.init();mc.setListControls(document.getElementById('mc_controls'));};</script>
+		<script>var mc = new MusiClock(<? readfile('playlists.json'); ?>);window.onload=function(){mc.init();mc.setListControls(document.getElementById('mc_controls'));};</script>
 	</head>
 	<body>
 		<section id="mc_controls">

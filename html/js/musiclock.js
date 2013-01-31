@@ -12,19 +12,19 @@ var MusiClock = function(list) {
 };
 MusiClock.prototype = {
 	init: function() {
+		this.markupControls();
 		this.attachHandlers();
 		if (!this.restoreState()) {
 			var mood = this.getFirstMood();
 			this.update({
 				mood: "working_pep",
-				playlist: 0,
+				playlist: null,
 				track: 0,
 				time: 0,
 				volume: 1,
 				playing: false
 			});
 		}
-		this.checkTime();
 		this.startTrackingState();
 	},
 	saveState: function() {
@@ -41,6 +41,8 @@ MusiClock.prototype = {
 		// FIXME: fall back to cookies
 
 		if (typeof state === "object") {
+			// FIXME: skips to next track. theory: seeking beyond buffer
+			// trigers 'ended' event
 			this.update(state);
 			return true;
 		}
@@ -75,13 +77,11 @@ MusiClock.prototype = {
 							this.state.mood = this.getFirstMood();
 						if (oldState.mood !== this.state.mood)
 							parameters.playlist = 0;
-						this.checkTime();
 						document.getElementById('moods').value = this.state.mood;
 						break;
 					case "playlist":
-						this.state.time = 0;
 						if (!this.list[this.state.mood].hasOwnProperty(this.state.playlist))
-							this.state.playlist = 0;
+							this.state.playlist = this.tickClock();
 						break;
 					case "track":
 						if (oldState.track !== this.state.track)
@@ -94,6 +94,14 @@ MusiClock.prototype = {
 			this.markupPlaylist();
 		if (drawRequired || "track" in parameters)
 			this.gotoTrack(this.state.track);
+	},
+	markupControls: function() {
+		var moodSelector = document.getElementById('moods');
+		var markup = '';
+		for (var mood in this.list) {
+			markup += '<option value="' + mood + '">' + mood + '</option>';
+		}
+		moodSelector.innerHTML = markup;
 	},
 	attachHandlers: function() {
 		var $this = this;
@@ -122,19 +130,24 @@ MusiClock.prototype = {
 	 *
 	 * expects keys like "1500" to mean 15:00 or 3:00pm
 	 */
-	checkTime: function() {
-		var $this = this, now = new Date(), hour, key, keys = [], nextHour,
+	getNearestLists: function() {
+		var now = new Date(), hour, key, keys = [];
+		hour = now.getHours().toString().pad(2, "0") + now.getMinutes().toString();
+		for (var listHour in this.list[this.state.mood]) {
+			var playlist = this.list[this.state.mood][listHour];
+			if (!playlist.length) continue;
+			if (listHour <= hour) { keys[0] = listHour; }
+			else                  { keys[1] = listHour; break; }
+		}
+		return keys;
+	},
+	tickClock: function() {
+		var $this = this, now = new Date(), keys = [], nextHour,
 			nextTime, wait;
 
 		clearTimeout(this.timeout);
 
-		hour = now.getHours().toString().pad(2, "0") + now.getMinutes().toString();
-		for (var i = 0; i < this.list[this.state.mood].length; i++) {
-			var playlist = this.list[this.state.mood][i];
-			if (!playlist.list.length) continue;
-			if (playlist.hour <= hour) { keys[0] = i; }
-			else             { keys[1] = i; break; }
-		}
+		keys = this.getNearestLists();
 
 		if (keys.length && keys[0] !== this.state.playlist) {
 			this.fadeVolume(0, 1, function() {
@@ -146,14 +159,21 @@ MusiClock.prototype = {
 		}
 
 		if (keys.length > 1) {
-			nextHour = this.list[this.state.mood][keys[1]].hour;
+			nextHour = keys[1];
 			nextHour = nextHour.substr(0,2) + ':' + nextHour.substr(2,2) + ':00';
 			nextTime = (new Date(now.toString().replace(/\d\d:\d\d:\d\d/, nextHour))).getTime();
-			wait = nextTime - now.getTime();
-			this.timeout = setTimeout(function() {
-				$this.checkTime();
-			}, wait);
+		} else {
+			// no next list: loop around to midnight tomorrow
+			nextTime = (new Date());
+			nextTime.setHours(0);
+			nextTime = nextTime.getTime() + 86400;
 		}
+		wait = nextTime - now.getTime();
+		this.timeout = setTimeout(function() {
+			$this.tickClock();
+		}, wait);
+
+		return keys[0];
 	},
 	markupPlaylist: function() {
 		var $this = this,
@@ -161,12 +181,12 @@ MusiClock.prototype = {
 			playlist = this.list[this.state.mood][this.state.playlist];
 
 		markup += '<h2>' + this.state.mood + '</h2>';
-		for (var i = 0; i < playlist.list.length; i++) {
-			var file = playlist.list[i];
+		for (var i = 0; i < playlist.length; i++) {
+			var file = playlist[i];
 			var id = 'track_' + i;
 			markup += '<label for="' + id + '">' + file + '</label>'
 			+ '<audio id="' + id + '" controls>'
-			+ '<source src="audio/' + this.state.mood + '/' + playlist.hour + '/' + file + '" />'
+			+ '<source src="audio/' + file + '" />'
 			+ '</audio>';
 		}
 		var list = document.getElementById('list');
@@ -175,7 +195,7 @@ MusiClock.prototype = {
 		for (var i = 0; i < players.length; i++) {
 			(function(i) {
 				players[i].addEventListener('canplay', function() {
-					if ($this.state.playing)
+					if ($this.state.playing && i == $this.state.track)
 						this.currentTime = $this.state.time;
 				});
 				players[i].addEventListener('play', function() {
@@ -258,13 +278,13 @@ MusiClock.prototype = {
 	},
 	prevTrack: function() {
 		var $this = this;
-		var setLength = this.list[this.state.mood][this.state.playlist].list.length;
+		var setLength = this.list[this.state.mood][this.state.playlist].length;
 		index = (isNaN(this.state.track)) ? 0 : (this.state.track - 1 + setLength) % setLength;
 		this.update({track:index});
 	},
 	nextTrack: function() {
 		var $this = this;
-		var setLength = this.list[this.state.mood][this.state.playlist].list.length;
+		var setLength = this.list[this.state.mood][this.state.playlist].length;
 		index = (isNaN(this.state.track)) ? 0 : (this.state.track + 1) % setLength;
 		this.update({track:index});
 	},
