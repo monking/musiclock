@@ -1,3 +1,12 @@
+// String.pad
+if (!String.prototype.pad) {
+	String.prototype.pad = function(length, char) {
+		var newString = this;
+		while (newString.length < length) newString = (char.toString() || ' ') + newString;
+		return newString.toString();
+	}
+}
+
 var MusiClock = function(list) {
 	this.list = list;
 };
@@ -111,7 +120,7 @@ MusiClock.prototype = {
 
 		clearTimeout(this.timeout);
 
-		hour = now.getHours().toString() + now.getMinutes().toString();
+		hour = now.getHours().toString().pad(2, "0") + now.getMinutes().toString();
 		for (var i = 0; i < this.list[this.state.mood].length; i++) {
 			var playlist = this.list[this.state.mood][i];
 			if (!playlist.list.length) continue;
@@ -125,7 +134,7 @@ MusiClock.prototype = {
 				setTimeout(function() {
 					$this.fadeVolume($this.state.volume);
 				}, 0);
-			}, 0);
+			});
 		}
 
 		if (keys.length > 1) {
@@ -148,8 +157,8 @@ MusiClock.prototype = {
 			var file = playlist.list[i];
 			var id = 'track_' + i;
 			markup += '<label for="' + id + '">' + file + '</label>'
-			+ '<audio id="' + id + '" controls preload>'
-			+ '	<source src="audio/' + this.state.mood + '/' + playlist.hour + '/' + file + '" />'
+			+ '<audio id="' + id + '" controls>'
+			+ '<source src="audio/' + this.state.mood + '/' + playlist.hour + '/' + file + '" />'
 			+ '</audio>';
 		}
 		var list = document.getElementById('list');
