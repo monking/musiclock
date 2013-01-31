@@ -17,7 +17,7 @@ MusiClock.prototype = {
 		if (!this.restoreState()) {
 			var mood = this.getFirstMood();
 			this.update({
-				mood: "working_pep",
+				mood: null,
 				playlist: null,
 				track: 0,
 				time: 0,
@@ -25,6 +25,7 @@ MusiClock.prototype = {
 				playing: false
 			});
 		}
+		this.tickClock();
 		this.startTrackingState();
 	},
 	saveState: function() {
@@ -76,12 +77,12 @@ MusiClock.prototype = {
 						if (!this.list.hasOwnProperty(this.state.mood))
 							this.state.mood = this.getFirstMood();
 						if (oldState.mood !== this.state.mood)
-							parameters.playlist = 0;
+							parameters.playlist = this.getNearestLists()[0];
 						document.getElementById('moods').value = this.state.mood;
 						break;
 					case "playlist":
 						if (!this.list[this.state.mood].hasOwnProperty(this.state.playlist))
-							this.state.playlist = this.tickClock();
+							this.state.playlist = this.getNearestLists()[0];
 						break;
 					case "track":
 						if (oldState.track !== this.state.track)
@@ -118,6 +119,7 @@ MusiClock.prototype = {
 				case 74: $this.nextMood(); break;
 				case 72: $this.prevTrack(); break;
 				case 76: $this.nextTrack(); break;
+				case 77: $this.selectMood(); break;
 				default: return true;
 			}
 			event.preventDefault();
@@ -131,13 +133,13 @@ MusiClock.prototype = {
 	 * expects keys like "1500" to mean 15:00 or 3:00pm
 	 */
 	getNearestLists: function() {
-		var now = new Date(), hour, key, keys = [];
+		var now = new Date(), hour, key, keys = ["0000"];
 		hour = now.getHours().toString().pad(2, "0") + now.getMinutes().toString();
 		for (var listHour in this.list[this.state.mood]) {
 			var playlist = this.list[this.state.mood][listHour];
 			if (!playlist.length) continue;
-			if (listHour <= hour) { keys[0] = listHour; }
-			else                  { keys[1] = listHour; break; }
+			if (listHour <= hour && listHour > keys[0]) { keys[0] = listHour; }
+			else if (listHour > hour && (!keys[1] || listHour < keys[1])) { keys[1] = listHour; }
 		}
 		return keys;
 	},
@@ -150,11 +152,15 @@ MusiClock.prototype = {
 		keys = this.getNearestLists();
 
 		if (keys.length && keys[0] !== this.state.playlist) {
-			this.fadeVolume(0, 1, function() {
-				$this.update({playlist: keys[0]});
-				setTimeout(function() {
-					$this.fadeVolume($this.state.volume);
-				}, 0);
+			this.fadeVolume({
+				to:0,
+				duration:1,
+				callback:function() {
+					$this.update({playlist: keys[0]});
+					setTimeout(function() {
+						$this.fadeVolume({to:$this.state.volume});
+					}, 0);
+				}
 			});
 		}
 
@@ -172,8 +178,6 @@ MusiClock.prototype = {
 		this.timeout = setTimeout(function() {
 			$this.tickClock();
 		}, wait);
-
-		return keys[0];
 	},
 	markupPlaylist: function() {
 		var $this = this,
@@ -258,6 +262,10 @@ MusiClock.prototype = {
 		}
 		if (mood == this.state.mood) nextMood = firstMood;
 		this.update({mood: nextMood});
+	},
+	selectMood: function() {
+		// STUB: cannot open mood selector as long as it is an OS select
+		// element
 	},
 	gotoTrack: function(index) {
 		this.state.track = index;
