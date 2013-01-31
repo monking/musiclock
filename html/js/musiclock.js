@@ -54,10 +54,10 @@ MusiClock.prototype = {
 		}
 		for (key in parameters) {
 			if (this.state.hasOwnProperty(key)) {
-				this.state[key] = parameters[key];
 				if (this.state[key] !== parameters[key] && drawWorthy.indexOf(key) != -1) {
 					drawRequired = true;
 				}
+				this.state[key] = parameters[key];
 				switch(key) {
 					case "mood":
 						document.getElementById('moods').value = this.state.mood;
