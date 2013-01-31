@@ -45,6 +45,7 @@ class Playlist {
 			usort($this->list[$mood], 'comparePlaylists');
 		}
 		closedir($all_handle);
+		ksort($this->list);
 	}
 
 }
