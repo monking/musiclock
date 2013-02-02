@@ -59,35 +59,41 @@ MusiClock.prototype = {
 		clearInterval(this.stateInterval);
 	},
 	update: function(parameters) {
-		var oldState = {}, drawRequired, key, drawWorthy = ["mood","playlist"];
+		var filters, drawRequired, key, drawWorthy = ["mood","playlist"];
 		if (!this.state) {
 			this.state = parameters;
 			drawRequired = true;
-		} else {
-			oldState = JSON.parse(JSON.stringify(this.state));
+		}
+		filters = {
+			"mood": function() {
+				if (!this.list.hasOwnProperty(parameters.mood))
+					parameters.mood = this.getFirstMood();
+				if (this.state.mood !== parameters.mood) {
+					parameters.playlist = null;
+					parameters.track = 0;
+				}
+				document.getElementById('moods').value = parameters.mood;
+			},
+			"playlist": function() {
+				if (typeof this.list[parameters.playlist] === "undefined")
+					parameters.playlist = this.getNearestLists()[0];
+			},
+			"track": function() {
+				if (this.state.track !== parameters.track)
+					this.killTrack(this.state.track);
+			}
+		};
+
+		for (key in filters) {
+			if (typeof parameters[key] !== "undefined")
+				filters[key].apply(this);
 		}
 		for (key in parameters) {
-			if (this.state.hasOwnProperty(key)) {
-				if (this.state[key] !== parameters[key] && drawWorthy.indexOf(key) != -1) {
-					drawRequired = true;
-				}
-				this.state[key] = parameters[key];
-				switch(key) {
-					case "mood":
-						if (!this.list.hasOwnProperty(this.state.mood))
-							this.state.mood = this.getFirstMood();
-						if (oldState.mood !== this.state.mood)
-							parameters.playlist = this.getNearestLists()[0];
-						document.getElementById('moods').value = this.state.mood;
-						break;
-					case "playlist":
-						if (!this.list[this.state.mood].hasOwnProperty(this.state.playlist))
-							this.state.playlist = this.getNearestLists()[0];
-						break;
-					case "track":
-						if (oldState.track !== this.state.track)
-							this.killTrack(oldState.track);
-						break;
+			if (typeof this.state[key] !== "undefined") {
+				if (this.state[key] !== parameters[key]) {
+					if (drawWorthy.indexOf(key) != -1)
+						drawRequired = true;
+					this.state[key] = parameters[key];
 				}
 			}
 		}
@@ -133,8 +139,8 @@ MusiClock.prototype = {
 	 * expects keys like "1500" to mean 15:00 or 3:00pm
 	 */
 	getNearestLists: function() {
-		var now = new Date(), hour, key, keys = ["0000"];
-		hour = now.getHours().toString().pad(2, "0") + now.getMinutes().toString();
+		var now = new Date(), hour, keys = ["0000"];
+		hour = now.getHours().toString().pad(2, "0") + now.getMinutes().toString().pad(2, "0");
 		for (var listHour in this.list[this.state.mood]) {
 			var playlist = this.list[this.state.mood][listHour];
 			if (!playlist.length) continue;
@@ -358,7 +364,7 @@ MusiClock.prototype = {
 		if (!options) options = defaults;
 		else {
 			for(var key in defaults) {
-				if (!options.hasOwnProperty(key))
+				if (typeof options[key] === "undefined")
 					options[key] = defaults[key];
 			}
 		}
