@@ -121,11 +121,13 @@ MusiClock.prototype = {
 		clearInterval(this.stateInterval);
 	},
 	update: function(parameters) {
-		var filters, drawRequired, key, drawWorthy = ["mood","playlist"];
+		var filters, drawRequired, key, drawWorthy = ["mood","playlist"],
+			currentPlayer, src;
 		if (!this.state) {
 			this.state = parameters;
 			drawRequired = true;
 		}
+		currentPlayer = this.getPlayer();
 		filters = {
 			"mood": function() {
 				if (!this.list.hasOwnProperty(parameters.mood))
@@ -137,8 +139,22 @@ MusiClock.prototype = {
 				document.getElementById('moods').value = parameters.mood;
 			},
 			"playlist": function() {
-				if (typeof this.list[parameters.playlist] === "undefined")
+				if (typeof this.list[parameters.mood][parameters.playlist] === "undefined") {
 					parameters.playlist = this.getNearestLists()[0];
+				}
+			},
+			"track": function() {
+				if (!currentPlayer.paused) {
+					currentPlayer.fadeVolume({
+						to:0,
+						callback:function() {
+							if (this.pause) {
+								this.pause();
+								this.seek(0);
+							}
+						}
+					});
+				}
 			}
 		};
 
@@ -157,8 +173,12 @@ MusiClock.prototype = {
 		}
 		if (drawRequired)
 			this.markupPlaylist();
-		if (drawRequired || "track" in parameters)
-			this.gotoTrack(this.state.track);
+		if (drawRequired || "track" in parameters) {
+			src = this.list[this.state.mood][this.state.playlist][this.state.track];
+			currentPlayer = this.getPlayer(src);
+			currentPlayer.load(src);
+			currentPlayer.setVolume(this.state.volume);
+		}
 	},
 	markupControls: function() {
 		var moodSelector = document.getElementById('moods');
@@ -216,14 +236,14 @@ MusiClock.prototype = {
 		keys = this.getNearestLists();
 
 		if (keys.length && keys[0] !== this.state.playlist) {
-			this.getCurrentPlayer().fadeVolume({
+			this.getPlayer().fadeVolume({
 				to:0,
 				duration:1,
 				callback:function() {
 					$this.update({playlist: keys[0]});
 					// FIXME: using timeout of 0 to allow DOM to catch up
 					setTimeout(function() {
-						$this.getCurrentPlayer().fadeVolume({to:$this.state.volume});
+						$this.getPlayer().fadeVolume({to:$this.state.volume});
 					}, 0);
 				}
 			});
@@ -294,18 +314,10 @@ MusiClock.prototype = {
 		currentPlayer = this.players[this.currentPlayerType][this.currentPlayerIndex];
 		nextPlayer = this.players[this.currentPlayerType][nextPlayerIndex];
 
-		nextPlayer.load(this.list[this.state.mood][this.state.playlist][index]);
-		nextPlayer.setVolume(this.state.volume);
 
-		currentPlayer.fadeVolume({
-			to:0,
-			callback:function() {
-				if (this.pause) {
-					this.pause();
-					this.seek(0);
-				}
-			}
-		});
+
+		currentPlayer.hide();
+		nextPlayer.show();
 		this.currentPlayerIndex = nextPlayerIndex;
 	},
 	prevTrack: function() {
@@ -323,7 +335,7 @@ MusiClock.prototype = {
 	killTrack: function(index) {
 	},
 	togglePause: function() {
-		var player = this.getCurrentPlayer();
+		var player = this.getPlayer();
 		player.paused ? player.play() : player.pause();
 	},
 	setVolume: function(volume) {
@@ -332,8 +344,7 @@ MusiClock.prototype = {
 		else
 			this.state.volume = volume;
 
-		var player = this.getCurrentPlayer();
-		if (player) player.setVolume(volume);
+		this.getPlayer().setVolume(volume);
 	},
 	upVolume: function() {
 		this.setVolume(Math.min(1, this.state.volume + 0.1));
@@ -360,9 +371,17 @@ MusiClock.prototype = {
 			}
 		}
 	},
-	getCurrentPlayer: function() {
-		return this.players[this.currentPlayerType][this.currentPlayerIndex];
-	},
+	getPlayer: function(src) {
+		var type = this.currentPlayerType;
+
+		if (src) {
+			// if (!/\.(mp3|ogg|wav|m4a)$/.test(src)) {
+			// 	type = 'youtube';
+			// }
+			this.currentPlayerIndex = 1 - this.currentPlayerIndex;
+		}
+		return this.players[type][this.currentPlayerIndex];
+	}
 };
 
 /*
@@ -530,4 +549,10 @@ Player.prototype.fadeVolume = function(options) {
 	};
 	clearInterval(this.fadeVolumeInterval);
 	this.fadeVolumeInterval = setInterval(fadeStep, Math.round(1000 / options.rate));
+};
+Player.prototype.show = function() {
+	this.element.style.display = 'block';
+};
+Player.prototype.hide = function() {
+	this.element.style.display = 'none';
 };
