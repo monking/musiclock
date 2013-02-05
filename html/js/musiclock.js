@@ -7,6 +7,26 @@ if (!String.prototype.pad) {
 	}
 }
 
+// toggleClass
+var toggleClass = function(element, className, override) {
+	var added = override,
+		classes = element.className.match(/([^\s]+)/g) || [],
+		classIndex = classes.indexOf(className);
+
+	if (classIndex > -1) {
+		if (!override) {
+			classes.splice(classIndex, 1);
+			added = false;
+		}
+	} else if (override !== false) {
+		classes.push(className);
+		added = true;
+	}
+	if (typeof added !== 'undefined')
+		element.className = classes.join(' ');
+	return added;
+};
+
 /*
  * MusiClock
  */
@@ -55,7 +75,7 @@ MusiClock.prototype = {
 						}
 					});
 					player.addEventListener('play', function() {
-						console.log('play ' + i);
+						console.log('play ' + $this.state.track);
 						if ($this.currentPlayerType === type
 						&& $this.currentPlayerIndex === i)
 							$this.state.paused = false;
@@ -63,7 +83,7 @@ MusiClock.prototype = {
 					player.addEventListener('pause', function() {
 						if ($this.currentPlayerType === type
 						&& $this.currentPlayerIndex === i) {
-							console.log('pause ' + i);
+							console.log('pause ' + $this.state.track);
 							$this.state.paused = true;
 						}
 					});
@@ -73,12 +93,15 @@ MusiClock.prototype = {
 							$this.state.time = this.currentTime;
 					});
 					player.addEventListener('ended', function() {
-						console.log('end ' + i);
-						// FIXME: pause fires before ended; I'm assuming ended
-						// implies the audio WAS playing before paused, restoring
-						// state
-						$this.state.paused = false;
-						$this.nextTrack();
+						if ($this.currentPlayerType === type
+						&& $this.currentPlayerIndex === i) {
+							console.log('end ' + $this.state.track);
+							// FIXME: pause fires before ended; I'm assuming ended
+							// implies the audio WAS playing before paused, restoring
+							// state
+							$this.state.paused = false;
+							$this.nextTrack();
+						}
 					});
 					player.addEventListener('volumechange', function() {
 						if ($this.currentPlayerType === type
@@ -105,7 +128,7 @@ MusiClock.prototype = {
 
 		if (typeof state === "object") {
 			// FIXME: skips to next track. theory: seeking beyond buffer
-			// trigers 'ended' event
+			// triggers 'ended' event
 			this.update(state);
 			return true;
 		}
@@ -122,12 +145,12 @@ MusiClock.prototype = {
 	},
 	update: function(parameters) {
 		var filters, drawRequired, key, drawWorthy = ["mood","playlist"],
-			currentPlayer, src;
+			currentPlayer, src, list;
 		if (!this.state) {
 			this.state = parameters;
 			drawRequired = true;
 		}
-		currentPlayer = this.getPlayer();
+		currentPlayer = this.getCurrentPlayer();
 		filters = {
 			"mood": function() {
 				if (!this.list.hasOwnProperty(parameters.mood))
@@ -155,6 +178,12 @@ MusiClock.prototype = {
 						}
 					});
 				}
+				if (typeof parameters.time == "undefined")
+					parameters.time = 0;
+				tracks = document.getElementsByClassName('track');
+				for (var i = 0; i < tracks.length; i++) {
+					toggleClass(tracks[i], 'active', i == parameters.track);
+				}
 			}
 		};
 
@@ -175,7 +204,13 @@ MusiClock.prototype = {
 			this.markupPlaylist();
 		if (drawRequired || "track" in parameters) {
 			src = this.list[this.state.mood][this.state.playlist][this.state.track];
-			currentPlayer = this.getPlayer(src);
+			// if (!/\.(ogg|wav|m4a|mp3)$/.test(src)) {
+			// 	this.currentPlayerType = 'youtube';
+			// }
+			currentPlayer.hide();
+			this.currentPlayerIndex = 1 - this.currentPlayerIndex;
+			currentPlayer = this.players[this.currentPlayerType][this.currentPlayerIndex];
+			currentPlayer.show();
 			currentPlayer.load(src);
 			currentPlayer.setVolume(this.state.volume);
 		}
@@ -204,6 +239,16 @@ MusiClock.prototype = {
 				case 72: $this.prevTrack(); break;
 				case 76: $this.nextTrack(); break;
 				case 77: $this.selectMood(); break;
+				case 48: $this.seekPortion(0); break;
+				case 49: $this.seekPortion(0.1); break;
+				case 50: $this.seekPortion(0.2); break;
+				case 51: $this.seekPortion(0.3); break;
+				case 52: $this.seekPortion(0.4); break;
+				case 53: $this.seekPortion(0.5); break;
+				case 54: $this.seekPortion(0.6); break;
+				case 55: $this.seekPortion(0.7); break;
+				case 56: $this.seekPortion(0.8); break;
+				case 57: $this.seekPortion(0.9); break;
 				default: return true;
 			}
 			event.preventDefault();
@@ -236,14 +281,14 @@ MusiClock.prototype = {
 		keys = this.getNearestLists();
 
 		if (keys.length && keys[0] !== this.state.playlist) {
-			this.getPlayer().fadeVolume({
+			this.getCurrentPlayer().fadeVolume({
 				to:0,
 				duration:1,
 				callback:function() {
 					$this.update({playlist: keys[0]});
 					// FIXME: using timeout of 0 to allow DOM to catch up
 					setTimeout(function() {
-						$this.getPlayer().fadeVolume({to:$this.state.volume});
+						$this.getCurrentPlayer().fadeVolume({to:$this.state.volume});
 					}, 0);
 				}
 			});
@@ -265,16 +310,23 @@ MusiClock.prototype = {
 		}, wait);
 	},
 	markupPlaylist: function() {
-		var $this = this,
-			markup = '',
+		var $this = this, markup = '', list, tracks,
 			playlist = this.list[this.state.mood][this.state.playlist];
 
 		markup += '<h2>' + this.state.mood + '</h2>';
 		for (var i = 0; i < playlist.length; i++) {
-			markup += '<div class="track">' + playlist[i] + '</div>';
+			markup += '<div class="track' + (i == this.state.track ? ' active' : '') + '">' + playlist[i] + '</div>';
 		}
 		var list = document.getElementById('list');
 		list.innerHTML = markup;
+		tracks = document.getElementsByClassName('track');
+		for (var i = 0; i < tracks.length; i++) {
+			(function(i) {
+				tracks[i].onclick = function() {
+					$this.update({track:i});
+				};
+			})(i);
+		}
 	},
 	getFirstMood: function() {
 		for (var mood in this.list) { return mood; }
@@ -306,20 +358,6 @@ MusiClock.prototype = {
 		// STUB: cannot open mood selector as long as it is an OS select
 		// element
 	},
-	gotoTrack: function(index) {
-		var nextPlayerIndex = 1 - this.currentPlayerIndex, currentPlayer, nextPlayer;
-
-		this.state.track = index;
-
-		currentPlayer = this.players[this.currentPlayerType][this.currentPlayerIndex];
-		nextPlayer = this.players[this.currentPlayerType][nextPlayerIndex];
-
-
-
-		currentPlayer.hide();
-		nextPlayer.show();
-		this.currentPlayerIndex = nextPlayerIndex;
-	},
 	prevTrack: function() {
 		var $this = this;
 		var setLength = this.list[this.state.mood][this.state.playlist].length;
@@ -334,8 +372,13 @@ MusiClock.prototype = {
 	},
 	killTrack: function(index) {
 	},
+	seekPortion: function(portion) {
+		var player = this.getCurrentPlayer();
+		if (!player) return;
+		player.seek(player.duration * portion);
+	},
 	togglePause: function() {
-		var player = this.getPlayer();
+		var player = this.getCurrentPlayer();
 		player.paused ? player.play() : player.pause();
 	},
 	setVolume: function(volume) {
@@ -344,7 +387,7 @@ MusiClock.prototype = {
 		else
 			this.state.volume = volume;
 
-		this.getPlayer().setVolume(volume);
+		this.getCurrentPlayer().setVolume(volume);
 	},
 	upVolume: function() {
 		this.setVolume(Math.min(1, this.state.volume + 0.1));
@@ -371,16 +414,8 @@ MusiClock.prototype = {
 			}
 		}
 	},
-	getPlayer: function(src) {
-		var type = this.currentPlayerType;
-
-		if (src) {
-			// if (!/\.(mp3|ogg|wav|m4a)$/.test(src)) {
-			// 	type = 'youtube';
-			// }
-			this.currentPlayerIndex = 1 - this.currentPlayerIndex;
-		}
-		return this.players[type][this.currentPlayerIndex];
+	getCurrentPlayer: function() {
+		return this.players[this.currentPlayerType][this.currentPlayerIndex];
 	}
 };
 
@@ -440,6 +475,7 @@ Player.prototype.init = function(options) {
 			options[key] = defaults[key];
 	}
 	this.currentTime = 0;
+	this.duration = 0;
 	this.volume = 0;
 	this.element = null;
 	this.paused = true;
@@ -460,6 +496,7 @@ Player.prototype.attachHandlers = function() {
 		} else {
 			$this.currentTime = this.currentTime;
 		}
+		$this.duration = this.duration;
 		$this.dispatchEvent('canplay');
 	});
 	this.element.addEventListener('play', function() {
@@ -476,7 +513,8 @@ Player.prototype.attachHandlers = function() {
 	});
 	this.element.addEventListener('ended', function() {
 		$this.paused = true;
-		$this.dispatchEvent('ended');
+		if (this.style.display !== 'none') // FIXME: getting doubled 'ended' events
+			$this.dispatchEvent('ended');
 	});
 	this.element.addEventListener('volumechange', function() {
 		$this.volume = this.volume;
