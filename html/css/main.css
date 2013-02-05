@@ -17,3 +17,9 @@ label {
 .track {
 	cursor: pointer;
 }
+audio { display: none; }
+.yt-container.hidden {
+	visibility: hidden;
+	position: absolute;
+	z-index: 0;
+}

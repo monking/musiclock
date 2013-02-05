@@ -39,7 +39,6 @@ MusiClock.prototype = {
 		this.markupControls();
 		this.attachHandlers();
 		if (!this.restoreState()) {
-			var mood = this.getFirstMood();
 			this.update({
 				mood: null,
 				playlist: null,
@@ -62,8 +61,8 @@ MusiClock.prototype = {
 				new Player({id:'htplayer1'})
 			],
 			"youtube": [
-				new YTPlayer({id:'ytplayer0',replace:'ytapiplayer0'}),
-				new YTPlayer({id:'ytplayer1',replace:'ytapiplayer1'})
+				new YTPlayer({id:'ytplayer0',replace:'ytapiplayer0',container:'ytcontainer0'}),
+				new YTPlayer({id:'ytplayer1',replace:'ytapiplayer1',container:'ytcontainer1'})
 			]
 		}
 		for (var type in this.players) {
@@ -155,10 +154,11 @@ MusiClock.prototype = {
 			drawRequired = true;
 		}
 		currentPlayer = this.getCurrentPlayer();
+		if (!this.state.mood) this.state.mood = this.getFirstMood();
 		filters = {
 			"mood": function() {
 				if (!this.list.hasOwnProperty(parameters.mood))
-					parameters.mood = this.getFirstMood();
+					parameters.mood = this.state.mood;
 				if (this.state.mood !== parameters.mood) {
 					parameters.playlist = null;
 					parameters.track = 0;
@@ -166,7 +166,7 @@ MusiClock.prototype = {
 				document.getElementById('moods').value = parameters.mood;
 			},
 			"playlist": function() {
-				if (typeof this.list[parameters.mood][parameters.playlist] === "undefined") {
+				if (typeof this.list[parameters.mood || this.state.mood][parameters.playlist] === "undefined") {
 					parameters.playlist = this.getNearestLists()[0];
 				}
 			},
@@ -230,8 +230,9 @@ MusiClock.prototype = {
 	attachHandlers: function() {
 		var $this = this;
 		window.onYouTubePlayerReady = function(playerId) {
-			for (var i = 0; i < $this.players.youtube; i++) {
-				$this.players.youtube[i].setElement(document.getElementById(playerId));
+			for (var i = 0; i < $this.players.youtube.length; i++) {
+				if ($this.players.youtube[i].options.id == playerId)
+					$this.players.youtube[i].setElement(document.getElementById(playerId));
 			}
 		};
 		document.getElementById('moods').onchange = function() {
@@ -526,8 +527,7 @@ Player.prototype.attachHandlers = function() {
 	});
 	this.element.addEventListener('ended', function() {
 		$this.paused = true;
-		if (this.style.display !== 'none') // FIXME: getting doubled 'ended' events
-			$this.dispatchEvent('ended');
+		$this.dispatchEvent('ended');
 	});
 	this.element.addEventListener('volumechange', function() {
 		$this.volume = this.volume;
@@ -619,7 +619,8 @@ YTPlayer.prototype = new Player();
 YTPlayer.constructor = YTPlayer;
 Player.prototype.defaults = {
 	id: null,
-	replace: null
+	replace: null,
+	container: null
 };
 YTPlayer.prototype.setElement = function(element) {
 	this.element = element;
@@ -631,7 +632,8 @@ YTPlayer.prototype.setElement = function(element) {
 };
 YTPlayer.prototype.attachHandlers = function() {
 	var $this = this;
-	this.element.addEventListener('onStateChange', function(state) {
+	var stateHandlerName = this.options.id + 'StateHandler';
+	window[stateHandlerName] = function(state) {
 		switch(state) {
 			case -1:
 				break;
@@ -652,7 +654,8 @@ YTPlayer.prototype.attachHandlers = function() {
 			case 5:
 				break;
 		}
-	});
+	};
+	this.element.addEventListener('onStateChange', stateHandlerName);
 	this.currentTimeInterval = setInterval(function() {
 		$this.currentTime = $this.element.getCurrentTime();
 		$this.volume = $this.element.getVolume() / 100;
@@ -687,8 +690,16 @@ YTPlayer.prototype.setVolume = function(volume) {
 		this.element.setVolume(volume * 100);
 };
 YTPlayer.prototype.show = function() {
-	// this.element.style.display = 'block';
+	toggleClass(
+		document.getElementById(this.options.container),
+		'hidden',
+		false
+	);
 };
 YTPlayer.prototype.hide = function() {
-	// this.element.style.display = 'none';
+	toggleClass(
+		document.getElementById(this.options.container),
+		'hidden',
+		true
+	);
 };

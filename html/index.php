@@ -22,8 +22,8 @@
 		<section id="players">
 			<audio id="htplayer0" controls></audio>
 			<audio id="htplayer1" controls></audio>
-			<div id="ytapiplayer0"></div>
-			<div id="ytapiplayer1"></div>
+			<div id="ytcontainer0" class="yt-container hidden"><div id="ytapiplayer0"></div></div>
+			<div id="ytcontainer1" class="yt-container hidden"><div id="ytapiplayer1"></div></div>
 
 			<script type="text/javascript">
 
