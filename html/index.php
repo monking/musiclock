@@ -22,7 +22,8 @@
 		<section id="players">
 			<audio id="htplayer0" controls></audio>
 			<audio id="htplayer1" controls></audio>
-			<div id="ytapiplayer"></div>
+			<div id="ytapiplayer0"></div>
+			<div id="ytapiplayer1"></div>
 
 			<script type="text/javascript">
 

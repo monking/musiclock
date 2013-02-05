@@ -60,6 +60,10 @@ MusiClock.prototype = {
 			"html": [
 				new Player({id:'htplayer0'}),
 				new Player({id:'htplayer1'})
+			],
+			"youtube": [
+				new YTPlayer({id:'ytplayer0',replace:'ytapiplayer0'}),
+				new YTPlayer({id:'ytplayer1',replace:'ytapiplayer1'})
 			]
 		}
 		for (var type in this.players) {
@@ -204,9 +208,9 @@ MusiClock.prototype = {
 			this.markupPlaylist();
 		if (drawRequired || "track" in parameters) {
 			src = this.list[this.state.mood][this.state.playlist][this.state.track];
-			// if (!/\.(ogg|wav|m4a|mp3)$/.test(src)) {
-			// 	this.currentPlayerType = 'youtube';
-			// }
+			if (!/\.(ogg|wav|m4a|mp3)$/.test(src)) {
+				this.currentPlayerType = 'youtube';
+			}
 			currentPlayer.hide();
 			this.currentPlayerIndex = 1 - this.currentPlayerIndex;
 			currentPlayer = this.players[this.currentPlayerType][this.currentPlayerIndex];
@@ -225,6 +229,11 @@ MusiClock.prototype = {
 	},
 	attachHandlers: function() {
 		var $this = this;
+		window.onYouTubePlayerReady = function(playerId) {
+			for (var i = 0; i < $this.players.youtube; i++) {
+				$this.players.youtube[i].setElement(document.getElementById(playerId));
+			}
+		};
 		document.getElementById('moods').onchange = function() {
 			$this.update({mood: this.selectedOptions[0].value});
 		}
@@ -465,18 +474,20 @@ var Player = function(options) {
 };
 Player.prototype = new EventDispatcher();
 Player.constructor = Player;
+Player.prototype.defaults = {
+	id: null
+};
 Player.prototype.init = function(options) {
-	var defaults = {
-		id: null
-	};
 	options = options || {};
-	for (var key in defaults) {
+	for (var key in this.defaults) {
 		if (typeof options[key] === "undefined")
-			options[key] = defaults[key];
+			options[key] = this.defaults[key];
 	}
+	this.options = options;
 	this.currentTime = 0;
 	this.duration = 0;
 	this.volume = 0;
+	this.id = null;
 	this.element = null;
 	this.paused = true;
 	this.fadeVolumeInterval = null;
@@ -486,6 +497,8 @@ Player.prototype.init = function(options) {
 };
 Player.prototype.setElement = function(element) {
 	this.element = element;
+	if (!element) return;
+
 	this.attachHandlers();
 };
 Player.prototype.attachHandlers = function() {
@@ -593,4 +606,89 @@ Player.prototype.show = function() {
 };
 Player.prototype.hide = function() {
 	this.element.style.display = 'none';
+};
+
+/*
+ * YTPlayer
+ * A YouTube Player interface
+ */
+var YTPlayer = function(options) {
+	this.init(options);
+};
+YTPlayer.prototype = new Player();
+YTPlayer.constructor = YTPlayer;
+Player.prototype.defaults = {
+	id: null,
+	replace: null
+};
+YTPlayer.prototype.setElement = function(element) {
+	this.element = element;
+	if (!element) return;
+
+	this.attachHandlers();
+	$this.duration = this.getDuration();
+	$this.dispatchEvent('canplay');
+};
+YTPlayer.prototype.attachHandlers = function() {
+	var $this = this;
+	this.element.addEventListener('onStateChange', function(state) {
+		switch(state) {
+			case -1:
+				break;
+			case 0:
+				$this.paused = true;
+				$this.dispatchEvent('ended');
+				break;
+			case 1:
+				$this.paused = false;
+				$this.dispatchEvent('play');
+				break;
+			case 2:
+				$this.paused = true;
+				$this.dispatchEvent('pause');
+				break;
+			case 3:
+				break;
+			case 5:
+				break;
+		}
+	});
+	this.currentTimeInterval = setInterval(function() {
+		$this.currentTime = $this.element.getCurrentTime();
+		$this.volume = $this.element.getVolume() / 100;
+	}, 1000);
+};
+YTPlayer.prototype.load = function(src) {
+	if (this.element) {
+		this.element.loadVideoById({'videoId': src, 'startSeconds': 0, 'suggestedQuality': 'large'});
+	} else {
+		var params = { allowScriptAccess: "always" };
+		var atts = { id: this.options.id };
+		swfobject.embedSWF("http://www.youtube.com/v/" + src + "?enablejsapi=1&playerapiid=" + this.options.id + "&version=3&autoplay=1",
+			this.options.replace, "425", "350", "8", null, null, params, atts);
+		return;
+	}
+	// FIXME: carry MusiClock.state.time into startSeconds
+};
+YTPlayer.prototype.play = function() {
+	this.element.playVideo();
+};
+YTPlayer.prototype.pause = function() {
+	this.element.pauseVideo();
+};
+YTPlayer.prototype.seek = function(seekTo) {
+	if (this.currentTime === seekTo) return;
+	this.currentTime = seekTo;
+	this.element.seekTo(seekTo);
+};
+YTPlayer.prototype.setVolume = function(volume) {
+	this.volume = volume;
+	if (this.element)
+		this.element.setVolume(volume * 100);
+};
+YTPlayer.prototype.show = function() {
+	// this.element.style.display = 'block';
+};
+YTPlayer.prototype.hide = function() {
+	// this.element.style.display = 'none';
 };
