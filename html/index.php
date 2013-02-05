@@ -18,6 +18,7 @@
 			</select>
 			<button class="prev">&laquo; prev</button>
 			<button class="next">next &raquo;</button>
+			<label><input type="checkbox" class="repeat"> repeat</label>
 		</section>
 		<section id="players">
 			<audio id="htplayer0" controls></audio>

@@ -45,7 +45,8 @@ MusiClock.prototype = {
 				track: 0,
 				time: 0,
 				volume: 1,
-				paused: false
+				paused: false,
+				repeatSingle: false
 			});
 		}
 		this.tickClock();
@@ -217,6 +218,7 @@ MusiClock.prototype = {
 			currentPlayer.show();
 			currentPlayer.load(src);
 			currentPlayer.setVolume(this.state.volume);
+			this.toggleRepeatSingle(this.state.repeatSingle);
 		}
 	},
 	markupControls: function() {
@@ -241,24 +243,25 @@ MusiClock.prototype = {
 		document.getElementsByTagName('body')[0].onkeyup = function(event) {
 			console.log(event.keyCode);
 			switch(event.keyCode) {
-				case 38: $this.upVolume(); break;
-				case 40: $this.downVolume(); break;
-				case 32: $this.togglePause(); break;
-				case 75: $this.prevMood(); break;
-				case 74: $this.nextMood(); break;
-				case 72: $this.prevTrack(); break;
-				case 76: $this.nextTrack(); break;
-				case 77: $this.selectMood(); break;
-				case 48: $this.seekPortion(0); break;
-				case 49: $this.seekPortion(0.1); break;
-				case 50: $this.seekPortion(0.2); break;
-				case 51: $this.seekPortion(0.3); break;
-				case 52: $this.seekPortion(0.4); break;
-				case 53: $this.seekPortion(0.5); break;
-				case 54: $this.seekPortion(0.6); break;
-				case 55: $this.seekPortion(0.7); break;
-				case 56: $this.seekPortion(0.8); break;
-				case 57: $this.seekPortion(0.9); break;
+				case 32: $this.togglePause(); break; /* SPACEBAR */
+				case 38: $this.upVolume(); break; /* UP */
+				case 40: $this.downVolume(); break; /* DOWN */
+				case 48: $this.seekPortion(0); break; /* 0 */
+				case 49: $this.seekPortion(0.1); break; /* 1 */
+				case 50: $this.seekPortion(0.2); break; /* 2 */
+				case 51: $this.seekPortion(0.3); break; /* 3 */
+				case 52: $this.seekPortion(0.4); break; /* 4 */
+				case 53: $this.seekPortion(0.5); break; /* 5 */
+				case 54: $this.seekPortion(0.6); break; /* 6 */
+				case 55: $this.seekPortion(0.7); break; /* 7 */
+				case 56: $this.seekPortion(0.8); break; /* 8 */
+				case 57: $this.seekPortion(0.9); break; /* 9 */
+				case 72: $this.prevTrack(); break; /* h */
+				case 74: $this.nextMood(); break; /* j */
+				case 75: $this.prevMood(); break; /* k */
+				case 76: $this.nextTrack(); break; /* l */
+				case 77: $this.selectMood(); break; /* m */
+				case 82: $this.toggleRepeatSingle(); break; /* r */
 				default: return true;
 			}
 			event.preventDefault();
@@ -380,8 +383,6 @@ MusiClock.prototype = {
 		index = (isNaN(this.state.track)) ? 0 : (this.state.track + 1) % setLength;
 		this.update({track:index});
 	},
-	killTrack: function(index) {
-	},
 	seekPortion: function(portion) {
 		var player = this.getCurrentPlayer();
 		if (!player) return;
@@ -390,6 +391,21 @@ MusiClock.prototype = {
 	togglePause: function() {
 		var player = this.getCurrentPlayer();
 		player.paused ? player.play() : player.pause();
+	},
+	toggleRepeatSingle: function(repeat) {
+		if (typeof repeat === "undefined")
+			this.state.repeatSingle = !this.state.repeatSingle;
+
+		this.getCurrentPlayer().setLoop(
+			this.state.repeatSingle
+			|| this.list[this.state.mood][this.state.playlist].length === 1
+		);
+		if (this.controls && this.controls.repeat) {
+			if (this.state.repeatSingle)
+				this.controls.repeat.setAttribute("checked", "checked");
+			else
+				this.controls.repeat.removeAttribute("checked");
+		}
 	},
 	setVolume: function(volume) {
 		if (typeof volume === "undefined" || isNaN(volume))
@@ -410,11 +426,16 @@ MusiClock.prototype = {
 	 */
 	setListControls: function(element) {
 		var $this = this;
-		var prev = element.getElementsByClassName('prev')[0];
-		if (prev) prev.onclick = function() { $this.prevTrack(); };
+		this.controls = {};
+		this.controls.prev = element.getElementsByClassName('prev')[0];
+		if (this.controls.prev) this.controls.prev.onclick = function() { $this.prevTrack(); };
 
-		var next = element.getElementsByClassName('next')[0];
-		if (next) next.onclick = function() { $this.nextTrack(); };
+		this.controls.next = element.getElementsByClassName('next')[0];
+		if (this.controls.next) this.controls.next.onclick = function() { $this.nextTrack(); };
+
+		this.controls.repeat = element.getElementsByClassName('repeat')[0];
+		if (this.controls.repeat) this.controls.repeat.onclick = function() { $this.toggleRepeatSingle(); };
+		this.toggleRepeatSingle(!!this.state.repeatSingle);
 	},
 	getPlayingAudio: function() {
 		players = document.getElementsByTagName('audio');
@@ -491,6 +512,7 @@ Player.prototype.init = function(options) {
 	this.id = null;
 	this.element = null;
 	this.paused = true;
+	this.looped = false;
 	this.fadeVolumeInterval = null;
 	if (options.id) {
 		this.setElement(document.getElementById(options.id));
@@ -549,6 +571,14 @@ Player.prototype.seek = function(seekTo) {
 	if (this.currentTime === seekTo) return;
 	this.currentTime = seekTo;
 	this.element.currentTime = seekTo;
+};
+Player.prototype.setLoop = function(looped) {
+	this.looped = looped;
+	if (looped) {
+		this.element.setAttribute("loop", "loop");
+	} else {
+		this.element.removeAttribute("loop");
+	}
 };
 Player.prototype.setVolume = function(volume) {
 	this.volume = volume;
@@ -683,6 +713,10 @@ YTPlayer.prototype.seek = function(seekTo) {
 	if (this.currentTime === seekTo) return;
 	this.currentTime = seekTo;
 	this.element.seekTo(seekTo);
+};
+YTPlayer.prototype.setLoop = function(looped) {
+	this.looped = looped;
+	this.element.setLoop(looped);
 };
 YTPlayer.prototype.setVolume = function(volume) {
 	this.volume = volume;
