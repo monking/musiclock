@@ -218,7 +218,9 @@ MusiClock.prototype = {
 			console.log(event.keyCode);
 			switch(event.keyCode) {
 				case 32: $this.togglePause(); break; /* SPACEBAR */
+				case 37: $this.seekRelative(-10); break; /* LEFT */
 				case 38: $this.upVolume(); break; /* UP */
+				case 39: $this.seekRelative(10); break; /* RIGHT */
 				case 40: $this.downVolume(); break; /* DOWN */
 				case 48: $this.seekPortion(0); break; /* 0 */
 				case 49: $this.seekPortion(0.1); break; /* 1 */
@@ -362,6 +364,16 @@ MusiClock.prototype = {
 		var player = this.getCurrentPlayer();
 		if (!player) return;
 		player.seek(player.duration * portion);
+	},
+	seekRelative: function(offset) {
+		var player, seekTo;
+
+		player = this.getCurrentPlayer();
+		if (!player) return;
+		seekTo = player.currentTime + offset;
+		seekTo = Math.max(seekTo, 0);
+		seekTo = Math.min(seekTo, player.duration);
+		player.seek(seekTo);
 	},
 	togglePause: function() {
 		var player = this.getCurrentPlayer();
