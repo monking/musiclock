@@ -5,7 +5,11 @@
 		<title>MusiClock</title>
 		<script type="text/javascript" src="js/swfobject/swfobject.js"></script>
 		<script type="text/javascript" src="http://www.youtube.com/player_api"></script>
+		<script type="text/javascript" src="js/eventdispatcher.js"></script>
+		<script type="text/javascript" src="js/utils.js"></script>
 		<script type="text/javascript" src="js/musiclock.js"></script>
+		<script type="text/javascript" src="js/player.js"></script>
+		<script type="text/javascript" src="js/ytplayer.js"></script>
 		<link type="text/css" rel="stylesheet" href="css/main.css" />
 		<script>var mc = new MusiClock(<? readfile('playlists.json'); ?>);window.onload=function(){mc.init();mc.setListControls(document.getElementById('mc_controls'));};</script>
 	</head>
