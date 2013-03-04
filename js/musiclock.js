@@ -48,7 +48,7 @@ MusiClock.prototype = {
 				}
 			});
 			player.addEventListener('play', function() {
-				console.log('play ' + $this.state.track);
+				console.log($this.state.track + ' play');
 				if ($this.currentPlayerType === type
 				&& $this.currentPlayerIndex === i)
 					$this.state.paused = false;
@@ -56,7 +56,7 @@ MusiClock.prototype = {
 			player.addEventListener('pause', function() {
 				if ($this.currentPlayerType === type
 				&& $this.currentPlayerIndex === i) {
-					console.log('pause ' + $this.state.track);
+					console.log($this.state.track + ' pause');
 					$this.state.paused = true;
 				}
 			});
@@ -68,10 +68,9 @@ MusiClock.prototype = {
 			player.addEventListener('ended', function() {
 				if ($this.currentPlayerType === type
 				&& $this.currentPlayerIndex === i) {
-					console.log('end ' + $this.state.track);
-					// FIXME: pause fires before ended; I'm assuming ended
-					// implies the audio WAS playing before paused, restoring
-					// state
+					console.log($this.state.track + ' end');
+					// FIXME: 'ended' should not affect `state.paused`, fix for
+					// 'pause' firing before 'ended'
 					$this.state.paused = false;
 					$this.nextTrack();
 				}
@@ -349,15 +348,15 @@ MusiClock.prototype = {
 		// element
 	},
 	prevTrack: function() {
-		var $this = this, index, setLength;
-		setLength = this.list[this.state.mood][this.state.playlist].length;
-		index = (isNaN(this.state.track)) ? 0 : (this.state.track - 1 + setLength) % setLength;
+		var $this = this, index, playlistLen;
+		playlistLen = this.list[this.state.mood][this.state.playlist].length;
+		index = (isNaN(this.state.track)) ? 0 : (this.state.track - 1 + playlistLen) % playlistLen;
 		this.update({track:index});
 	},
 	nextTrack: function() {
-		var $this = this, index, setLength;
-		setLength = this.list[this.state.mood][this.state.playlist].length;
-		index = (isNaN(this.state.track)) ? 0 : (this.state.track + 1) % setLength;
+		var $this = this, index, playlistLen;
+		playlistLen = this.list[this.state.mood][this.state.playlist].length;
+		index = (isNaN(this.state.track)) ? 0 : (this.state.track + 1) % playlistLen;
 		this.update({track:index});
 	},
 	seekPortion: function(portion) {
