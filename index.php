@@ -11,7 +11,7 @@
 		<script type="text/javascript" src="js/player.js"></script>
 		<script type="text/javascript" src="js/ytplayer.js"></script>
 		<link type="text/css" rel="stylesheet" href="css/main.css" />
-		<script>var mc = new MusiClock(<? readfile('playlists.json'); ?>);window.onload=function(){mc.init();mc.setListControls(document.getElementById('mc_controls'));};</script>
+		<script>var mc = new MusiClock(<?php readfile('playlists.json'); ?>);window.onload=function(){mc.init();mc.setListControls(document.getElementById('mc_controls'));};</script>
 	</head>
 	<body>
 		<section id="mc_controls">

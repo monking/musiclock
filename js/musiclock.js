@@ -48,7 +48,7 @@ MusiClock.prototype = {
 				}
 			});
 			player.addEventListener('play', function() {
-				console.log($this.state.track + ' play');
+				console.log($this.state.track + ' play on player ' + i);
 				if ($this.currentPlayerType === type
 				&& $this.currentPlayerIndex === i)
 					$this.state.paused = false;
@@ -56,7 +56,7 @@ MusiClock.prototype = {
 			player.addEventListener('pause', function() {
 				if ($this.currentPlayerType === type
 				&& $this.currentPlayerIndex === i) {
-					console.log($this.state.track + ' pause');
+					console.log($this.state.track + ' pause on player ' + i);
 					$this.state.paused = true;
 				}
 			});
@@ -68,7 +68,7 @@ MusiClock.prototype = {
 			player.addEventListener('ended', function() {
 				if ($this.currentPlayerType === type
 				&& $this.currentPlayerIndex === i) {
-					console.log($this.state.track + ' end');
+					console.log($this.state.track + ' end on player ' + i);
 					// FIXME: 'ended' should not affect `state.paused`, fix for
 					// 'pause' firing before 'ended'
 					$this.state.paused = false;
@@ -187,6 +187,7 @@ MusiClock.prototype = {
 			}
 			currentPlayer.hide();
 			this.currentPlayerIndex = 1 - this.currentPlayerIndex;
+			console.log("switch to player " + this.currentPlayerIndex);
 			currentPlayer = this.players[this.currentPlayerType][this.currentPlayerIndex];
 			currentPlayer.show();
 			currentPlayer.load(src);
@@ -357,6 +358,7 @@ MusiClock.prototype = {
 		var $this = this, index, playlistLen;
 		playlistLen = this.list[this.state.mood][this.state.playlist].length;
 		index = (isNaN(this.state.track)) ? 0 : (this.state.track + 1) % playlistLen;
+		console.log("update {track:" + index + "}");
 		this.update({track:index});
 	},
 	seekPortion: function(portion) {
