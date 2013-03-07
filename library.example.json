@@ -1,0 +1,35 @@
+{
+	"library":{
+		"1":{
+			"src":"artist/album/track_01.mp3",
+			"title":"Track 1",
+			"album":"Demo",
+			"artist":"Doin' It Right",
+			"ab":[5000,180000],
+			"rating":5
+		},
+		"2":{
+			"src":"artist/album/track_02.mp3",
+			"title":"Track 2",
+			"album":"Demo",
+			"artist":"Doin' It Right",
+			"rating":4
+		},
+		"3":{
+			"src":"artist/album/track_03.mp3",
+			"title":"Track 3",
+			"album":"Demo",
+			"artist":"Doin' It Right",
+			"rating":3
+		}
+	},
+	"playlists":{
+		"Fun":[
+			{"track":2},
+			{"track":1,"behavior":"!{18:00-18:30}"}
+		],
+		"Serious":[
+			{"track":3}
+		]
+	}
+}
