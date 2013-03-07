@@ -19,7 +19,6 @@ Player.prototype.init = function(options) {
 	this.currentTime = 0;
 	this.duration = 0;
 	this.volume = 0;
-	this.id = null;
 	this.element = null;
 	this.paused = true;
 	this.looped = false;
@@ -129,7 +128,7 @@ Player.prototype.fadeVolume = function(options) {
 			$this.setVolume(options.to);
 			clearInterval($this.fadeVolumeInterval);
 			if (typeof options.callback === "function")
-				options.callback.apply($this);
+				options.callback.call($this);
 			setTimeout(function() {
 				// empty fadeVolumeInterval after the stack executes
 				$this.fadeVolumeInterval = null;

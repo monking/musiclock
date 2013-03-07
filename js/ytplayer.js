@@ -57,7 +57,7 @@ YTPlayer.prototype.load = function(src) {
 	} else {
 		var params = { allowScriptAccess: "always" };
 		var atts = { id: this.options.id };
-		swfobject.embedSWF("http://www.youtube.com/v/" + src + "?enablejsapi=1&playerapiid=" + this.options.id + "&version=3&autoplay=1",
+		swfobject.embedSWF("http://www.youtube.com/v/" + src + "?enablejsapi=1&playerapiid=" + this.options.id + "&version=3&autoplay=1&loop=" + (this.options.loop ? "1" : "0"),
 			this.options.replace, "425", "350", "8", null, null, params, atts);
 		return;
 	}
@@ -72,11 +72,15 @@ YTPlayer.prototype.pause = function() {
 YTPlayer.prototype.seek = function(seekTo) {
 	if (this.currentTime === seekTo) return;
 	this.currentTime = seekTo;
-	this.element.seekTo(seekTo);
+	if (this.element) {
+		this.element.seekTo(seekTo);
+	}
 };
 YTPlayer.prototype.setLoop = function(looped) {
 	this.looped = looped;
-	this.element.setLoop(looped);
+	if (this.element) {
+		this.element.setLoop(looped);
+	}
 };
 YTPlayer.prototype.setVolume = function(volume) {
 	this.volume = volume;

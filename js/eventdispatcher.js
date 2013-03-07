@@ -29,7 +29,7 @@ EventDispatcher.prototype = {
 			for (var i = 0; i < $this.listeners[eventName].length; i++)
 			{
 				if (typeof $this.listeners[eventName][i] === 'function') {
-					$this.listeners[eventName][i].apply($this, [data]);;
+					$this.listeners[eventName][i].apply($this, [{type:eventName,data:data}]);;
 				}
 			}
 		}

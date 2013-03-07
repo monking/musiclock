@@ -50,4 +50,4 @@ Example:
 Credit
 ------
 
-This project was inspired by the realtime Animal Crossing playlist at http://tane.us/ac/
+This project was inspired by the realtime Animal Crossing playlist at [http://tane.us/ac/](http://tane.us/ac/)
