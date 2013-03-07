@@ -48,26 +48,31 @@ MusiClock.prototype = {
 			player.addEventListener('canplay', function() {
 				if (isCurrentPlayer(player)
 				&& !$this.state.paused) {
+					console.log(player.options.id + ': ' + arguments[0].type);
 					player.seek($this.state.time);
 					player.play();
 				}
 			});
 			player.addEventListener('play', function() {
 				if (isCurrentPlayer(player)) {
+					console.log(player.options.id + ': ' + arguments[0].type);
 					$this.state.paused = false;
 				}
 			});
 			player.addEventListener('pause', function() {
-				if (isCurrentPlayer(this)) {
+				if (isCurrentPlayer(player)) {
+					console.log(player.options.id + ': ' + arguments[0].type);
 					$this.state.paused = true;
 				}
 			});
 			player.addEventListener('timeupdate', function() {
-				if (isCurrentPlayer(player))
+				if (isCurrentPlayer(player)) {
 					$this.state.time = player.currentTime;
+				}
 			});
 			player.addEventListener('ended', function() {
 				if (isCurrentPlayer(player)) {
+					console.log(player.options.id + ': ' + arguments[0].type);
 					// FIXME: 'ended' should not affect `state.paused`, fix for
 					// 'pause' firing before 'ended'
 					$this.state.paused = false;
