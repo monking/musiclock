@@ -28,8 +28,10 @@ YTPlayer.prototype.attachHandlers = function() {
 			case -1:
 				break;
 			case 0:
-				$this.paused = true;
-				$this.dispatchEvent('ended');
+				if(!$this.looped) {
+					$this.paused = true;
+					$this.dispatchEvent('ended');
+				}
 				break;
 			case 1:
 				$this.paused = false;

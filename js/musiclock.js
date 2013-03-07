@@ -248,8 +248,10 @@ MusiClock.prototype = {
 				case 74: $this.nextMood(); break; /* j */
 				case 75: $this.prevMood(); break; /* k */
 				case 76: $this.nextTrack(); break; /* l */
-				case 77: $this.selectMood(); break; /* m */
+				case 77: $this.toggleMute(); break; /* m */
 				case 82: $this.toggleRepeatSingle(); break; /* r */
+				case 187: $this.upVolume(); break; /* = */
+				case 189: $this.downVolume(); break; /* - */
 				default: return true;
 			}
 			event.preventDefault();
@@ -407,10 +409,10 @@ MusiClock.prototype = {
 				this.controls.repeat.removeAttribute("checked");
 		}
 	},
-	setVolume: function(volume) {
+	setVolume: function(volume, noState) {
 		if (typeof volume === "undefined" || isNaN(volume))
 			volume = this.state.volume;
-		else
+		else if (!noState)
 			this.state.volume = volume;
 
 		this.getCurrentPlayer().setVolume(volume);
@@ -420,6 +422,10 @@ MusiClock.prototype = {
 	},
 	downVolume: function() {
 		this.setVolume(Math.max(0, this.state.volume - 0.1));
+	},
+	toggleMute: function() {
+		// FIXME: set volume on the player, without triggering a "volumechange"
+		// event
 	},
 	/*
 	 * add listeners on control element's children, by class
