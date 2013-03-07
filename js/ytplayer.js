@@ -28,7 +28,10 @@ YTPlayer.prototype.attachHandlers = function() {
 			case -1:
 				break;
 			case 0:
-				if(!$this.looped) {
+				if($this.looped) {
+					$this.seek(0);
+					$this.play();
+				} else {
 					$this.paused = true;
 					$this.dispatchEvent('ended');
 				}
@@ -81,7 +84,8 @@ YTPlayer.prototype.seek = function(seekTo) {
 YTPlayer.prototype.setLoop = function(looped) {
 	this.looped = looped;
 	if (this.element) {
-		this.element.setLoop(looped);
+		// FIXME: YT_API::setLoop isn't working; handling in 'ended' event
+		// this.element.setLoop(looped);
 	}
 };
 YTPlayer.prototype.setVolume = function(volume) {
