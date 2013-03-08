@@ -72,4 +72,6 @@ Credit
 ------
 
 This project was inspired by the realtime Animal Crossing playlist at
-[http://tane.us/ac/](http://tane.us/ac/)
+[http://tane.us/ac/](http://tane.us/ac/), which I found by its mention in an
+[interview with animator Mariel
+Cartwright](http://www.youtube.com/watch?v=WCQuwwbVyVE).
