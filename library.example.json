@@ -1,30 +1,30 @@
 {
 	"playlists":{
 		"Fun":[
-			{"id":2},
-			{"id":1,"rules":"!{18:00-18:30}"}
+			{"id":"demo_01"},
+			{"id":"demo_02","rules":"!{18:00-18:30}"}
 		],
 		"Serious":[
-			{"id":3}
+			{"id":"demo_03"}
 		]
 	},
 	"library":{
-		"1":{
+		"demo_01":{
 			"src":"artist/album/track_01.mp3",
 			"title":"Track 1",
 			"album":"Demo",
 			"artist":"Doin' It Right",
-			"ab":[5000,180000],
+			"ab":[5,180],
 			"rating":5
 		},
-		"2":{
+		"demo_02":{
 			"src":"artist/album/track_02.mp3",
 			"title":"Track 2",
 			"album":"Demo",
 			"artist":"Doin' It Right",
 			"rating":4
 		},
-		"3":{
+		"demo_03":{
 			"src":"artist/album/track_03.mp3",
 			"title":"Track 3",
 			"album":"Demo",

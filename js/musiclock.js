@@ -13,6 +13,7 @@ MusiClock.prototype = {
 			this.update({
 				playlist: null,
 				trackStates: null,
+				numActiveTracks: null,
 				track: 0,
 				time: 0,
 				volume: 1,
@@ -66,8 +67,15 @@ MusiClock.prototype = {
 				}
 			});
 			player.addEventListener('timeupdate', function() {
+				var currentTrack;
 				if (isCurrentPlayer(player)) {
 					$this.state.time = player.currentTime;
+					currentTrack = $this.getTrack();
+					if (($this.state.repeatSingle || $this.state.numActiveTracks === 1) && currentTrack.ab) {
+						if ($this.state.time >= currentTrack.ab[1]) {
+							player.seek(currentTrack.ab[0]);
+						}
+					}
 				}
 			});
 			player.addEventListener('ended', function() {
@@ -108,7 +116,7 @@ MusiClock.prototype = {
 		if (typeof state === "object") {
 			state.trackStates = this.getTrackStates(state.playlist);
 			if (!state.trackStates[state.track]) {
-				state.track = this.getFirstActiveTrack(state.track, 1, state.trackStates);
+				state.track = this.getFirstActiveTrackIndex(state.track, 1, state.trackStates);
 			}
 			this.update(state);
 			return true;
@@ -151,10 +159,14 @@ MusiClock.prototype = {
 						parameters.trackStates = this.getTrackStates(playlist);
 					}
 					document.getElementById('playlists').value = playlist
-					for (var i = 0; i < trackLabels.length; i++) {
-						toggleClass(trackLabels[i], 'inactive', !parameters.trackStates[i]);
+
+					this.state.numActiveTracks = 0;
+					for (var i = 0; i < this.state.trackStates.length; i++) {
+						if (this.state.trackStates[i]) this.state.numActiveTracks++;
+						if (trackLabels && trackLabels.length)
+							toggleClass(trackLabels[i], 'inactive', !parameters.trackStates[i]);
 					}
-					activeTrack = this.getFirstActiveTrack(
+					activeTrack = this.getFirstActiveTrackIndex(
 						typeof parameters.track !== "undefined" ?
 							parameters.track :
 							this.state.track,
@@ -173,7 +185,7 @@ MusiClock.prototype = {
 
 					if (typeof this.data.playlists[playlist].tracks[parameters.track] === "undefined") {
 						newTrackStates = this.getTrackStates(playlist);
-						parameters.track = this.getFirstActiveTrack(parameters.track, 1, newTrackStates);
+						parameters.track = this.getFirstActiveTrackIndex(parameters.track, 1, newTrackStates);
 					}
 
 					if (!currentPlayer.paused) {
@@ -213,7 +225,7 @@ MusiClock.prototype = {
 		if (drawRequired)
 			this.markupPlaylist();
 		if (drawRequired || "track" in parameters) {
-			track = this.data.library[this.data.playlists[this.state.playlist].tracks[this.state.track].id];
+			track = this.getTrack();
 			if (track.src && !/\.(ogg|wav|m4a|mp3)$/.test(track.src)) {
 				this.currentPlayerType = 'youtube';
 			} else {
@@ -355,7 +367,7 @@ MusiClock.prototype = {
 			if (!this.state.trackStates[i]) trackClasses.push("inactive");
 			if (i == this.state.track) trackClasses.push("current");
 
-			track = this.data.library[playlist.tracks[i].id];
+			track = this.getTrack(this.state.playlist, i);
 			title = track.title || track.src;
 			markup += '<div class="' + trackClasses.join(" ") + '">' + title + '</div>';
 		}
@@ -374,7 +386,12 @@ MusiClock.prototype = {
 	getFirstPlaylist: function() {
 		for (var playlist in this.data.playlists) { return playlist; }
 	},
-	getFirstActiveTrack: function(checkFrom, direction, trackStates) {
+	getTrack: function(playlist, index) {
+		if (typeof playlist === "undefined") playlist = this.state.playlist;
+		if (typeof index === "undefined") index = this.state.track;
+		return this.data.library[this.data.playlists[playlist].tracks[index].id];
+	},
+	getFirstActiveTrackIndex: function(checkFrom, direction, trackStates) {
 		var first, next, from, to;
 
 		checkFrom = checkFrom || 0;
@@ -423,10 +440,10 @@ MusiClock.prototype = {
 		// element
 	},
 	prevTrack: function() {
-		this.update({track:this.getFirstActiveTrack(this.state.track - 1, -1)});
+		this.update({track:this.getFirstActiveTrackIndex(this.state.track - 1, -1)});
 	},
 	nextTrack: function() {
-		this.update({track:this.getFirstActiveTrack(this.state.track + 1)});
+		this.update({track:this.getFirstActiveTrackIndex(this.state.track + 1)});
 	},
 	seekPortion: function(portion) {
 		var player = this.getCurrentPlayer();
@@ -448,16 +465,12 @@ MusiClock.prototype = {
 		player.paused ? player.play() : player.pause();
 	},
 	toggleRepeatSingle: function(repeat) {
-		var activeTracksLength;
 		if (typeof repeat === "undefined")
 			this.state.repeatSingle = !this.state.repeatSingle;
 
-		for (var i = 0; i < this.state.trackStates.length; i++) {
-			if (this.state.trackStates[i]) activeTracksLength++;
-		}
 		this.getCurrentPlayer().setLoop(
 			this.state.repeatSingle
-			|| activeTracksLength === 1
+			|| this.state.numActiveTracks === 1
 		);
 		if (this.controls && this.controls.repeat) {
 			if (this.state.repeatSingle)

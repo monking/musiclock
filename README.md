@@ -31,9 +31,9 @@ Tracks in the library have the following attributes:
 - **title**: (optional) Track title
 - **album**: (optional) Album title
 - **artist**: (optional) Artist name
-- **ab**: (optional) Times in milliseconds for the start and end of a loop. If
-  a the player is set to repeat one song, or if a playlist only contains one
-  song, the song plays from the beginning, and when the second time (**b**) is
+- **ab**: (optional) Times in seconds for the start and end of a loop. If a the
+  player is set to repeat one song, or if a playlist only contains one song,
+  the song plays from the beginning, and when the second time (**b**) is
   reached, the player skips to the first time (**a**).
 - **rating**: (optional) A numeric rating from **1** to **5**
 

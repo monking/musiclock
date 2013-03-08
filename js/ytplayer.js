@@ -52,8 +52,17 @@ YTPlayer.prototype.attachHandlers = function() {
 	};
 	this.element.addEventListener('onStateChange', stateHandlerName);
 	this.currentTimeInterval = setInterval(function() {
+		var oldTime, oldVolume;
+
+		oldTime = $this.currentTime;
 		$this.currentTime = $this.element.getCurrentTime();
+		if (oldTime !== $this.currentTime)
+			$this.dispatchEvent('timeupdate');
+
+		oldVolume = $this.volume;
 		$this.volume = $this.element.getVolume() / 100;
+		if (oldVolume !== $this.volume)
+			$this.dispatchEvent('volumechange');
 	}, 1000);
 };
 YTPlayer.prototype.load = function(src) {
