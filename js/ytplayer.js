@@ -63,7 +63,7 @@ YTPlayer.prototype.attachHandlers = function() {
 		$this.volume = $this.element.getVolume() / 100;
 		if (oldVolume !== $this.volume)
 			$this.dispatchEvent('volumechange');
-	}, 1000);
+	}, 250);
 };
 YTPlayer.prototype.load = function(src) {
 	if (this.element) {

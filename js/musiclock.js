@@ -114,10 +114,12 @@ MusiClock.prototype = {
 		// FIXME: fall back to cookies
 
 		if (typeof state === "object") {
+			/*
 			state.trackStates = this.getTrackStates(state.playlist);
 			if (!state.trackStates[state.track]) {
 				state.track = this.getFirstActiveTrackIndex(state.track, 1, state.trackStates);
 			}
+			*/
 			this.update(state);
 			return true;
 		}
@@ -146,6 +148,7 @@ MusiClock.prototype = {
 				(function() {
 					if (typeof this.data.playlists[parameters.playlist] === "undefined") {
 						parameters.playlist = this.getFirstPlaylist();
+						parameters.trackStates = null;
 					}
 					document.getElementById('playlists').value = parameters.playlists
 				}).call(this);
