@@ -1,4 +1,13 @@
 {
+	"playlists":{
+		"Fun":[
+			{"id":2},
+			{"id":1,"rules":"!{18:00-18:30}"}
+		],
+		"Serious":[
+			{"id":3}
+		]
+	},
 	"library":{
 		"1":{
 			"src":"artist/album/track_01.mp3",
@@ -22,14 +31,5 @@
 			"artist":"Doin' It Right",
 			"rating":3
 		}
-	},
-	"playlists":{
-		"Fun":[
-			{"track":2},
-			{"track":1,"behavior":"!{18:00-18:30}"}
-		],
-		"Serious":[
-			{"track":3}
-		]
 	}
 }

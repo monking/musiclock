@@ -1,4 +1,3 @@
-<?php require_once 'config/config.php'; ?>
 <!DOCTYPE html>
 <html>
 	<head>
@@ -12,7 +11,7 @@
 		<script type="text/javascript" src="js/ytplayer.js"></script>
 		<link type="text/css" rel="stylesheet" href="css/main.css" />
 		<script type="text/javascript">
-var mc = new MusiClock(<?php readfile('playlists.json'); ?>);
+var mc = new MusiClock(<?php readfile('library.json'); ?>);
 window.onload=function(){
 	mc.init();
 	mc.setListControls(document.getElementById('mc_controls'));
@@ -21,11 +20,7 @@ window.onload=function(){
 	</head>
 	<body>
 		<section id="mc_controls">
-			<select id="moods">
-<?php foreach($pl->list as $mood => $set) : ?>
-				<option value="<?=$mood?>"><?=$mood?></option>
-<?php endforeach; ?>
-			</select>
+			<select id="playlists"></select>
 			<button class="prev">&laquo; prev</button>
 			<button class="next">next &raquo;</button>
 			<label><input type="checkbox" class="repeat"> repeat</label>
