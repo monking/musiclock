@@ -262,7 +262,7 @@ MusiClock.prototype = {
 		document.getElementById('playlists').onchange = function() {
 			$this.update({playlist: this.selectedOptions[0].value});
 		}
-		document.getElementsByTagName('body')[0].onkeyup = function(event) {
+		document.getElementsByTagName('body')[0].onkeydown = function(event) {
 			console.log(event.keyCode);
 			switch(event.keyCode) {
 				case 32: $this.togglePause(); break; /* SPACEBAR */
@@ -468,7 +468,9 @@ MusiClock.prototype = {
 		player.paused ? player.play() : player.pause();
 	},
 	toggleRepeatSingle: function(repeat) {
-		if (typeof repeat === "undefined")
+		if (typeof repeat !== "undefined")
+			this.state.repeatSingle = repeat;
+		else
 			this.state.repeatSingle = !this.state.repeatSingle;
 
 		this.getCurrentPlayer().setLoop(
