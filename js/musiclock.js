@@ -478,10 +478,7 @@ MusiClock.prototype = {
 			|| this.state.numActiveTracks === 1
 		);
 		if (this.controls && this.controls.repeat) {
-			if (this.state.repeatSingle)
-				this.controls.repeat.setAttribute("checked", "checked");
-			else
-				this.controls.repeat.removeAttribute("checked");
+			this.controls.repeat.checked = this.state.repeatSingle;
 		}
 	},
 	setVolume: function(volume, noState) {
