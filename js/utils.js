@@ -26,3 +26,7 @@ var toggleClass = function(element, className, override) {
 		element.className = classes.join(' ');
 	return added;
 };
+
+window.log = function(message) {
+  document.getElementById("debug").innerHTML = message;
+};

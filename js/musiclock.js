@@ -19,7 +19,7 @@ MusiClock.prototype = {
 				volume          : 1,
 				paused          : false,
 				repeatSingle    : false,
-				minPlaytime     : 0
+				minPlaytime     : 100
 			});
 		}
 		this.tickClock();
@@ -533,7 +533,10 @@ MusiClock.prototype = {
 		this.toggleRepeatSingle(!!this.state.repeatSingle);
 
 		this.controls.minPlaytime = element.getElementsByClassName('minPlaytime')[0];
-		if (this.controls.minPlaytime) this.controls.minPlaytime.onchange = function() { $this.setMinPlaytime(this.value); };
+		if (this.controls.minPlaytime) {
+			this.controls.minPlaytime.value = this.state.minPlaytime;
+			this.controls.minPlaytime.onchange = function() { $this.setMinPlaytime(this.value); };
+		}
 	},
 	getPlayingAudio: function() {
         var players;

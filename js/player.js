@@ -22,6 +22,7 @@ Player.prototype.init = function(options) {
 	this.playtime = 0;
 	this.element = null;
 	this.paused = true;
+	this.seeking = false;
 	this.looped = false;
 	this.fadeVolumeInterval = null;
 	if (options.id) {
@@ -53,9 +54,16 @@ Player.prototype.attachHandlers = function() {
 		$this.paused = true;
 		$this.dispatchEvent('pause');
 	});
+	this.element.addEventListener('seeking', function() {
+    $this.seeking = true;
+	});
 	this.element.addEventListener('timeupdate', function() {
-		$this.playtime += this.currentTime - $this.currentTime;
+    if (!$this.seeking) {
+      $this.playtime += this.currentTime - $this.currentTime;
+    }
+    window.log(Math.round($this.playtime*10)/10);
 		$this.currentTime = this.currentTime;
+    $this.seeking = false;
 		$this.dispatchEvent('timeupdate');
 	});
 	this.element.addEventListener('ended', function() {
@@ -68,6 +76,8 @@ Player.prototype.attachHandlers = function() {
 	});
 };
 Player.prototype.load = function(src) {
+  this.playtime = 0;
+  this.seeking = true;
 	this.element.innerHTML = '<source src="audio/' + src + '" />';
 	if (this.element.pause) this.element.pause();
 	this.element.load();
@@ -80,6 +90,7 @@ Player.prototype.pause = function() {
 };
 Player.prototype.seek = function(seekTo) {
 	if (this.currentTime === seekTo) return;
+  this.seeking = true
 	this.currentTime = seekTo;
 	this.element.currentTime = seekTo;
 };

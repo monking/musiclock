@@ -31,6 +31,7 @@ window.onload=function(){
 			<audio id="htplayer1" controls></audio>
 			<div id="ytcontainer0" class="yt-container hidden"><div id="ytapiplayer0"></div></div>
 			<div id="ytcontainer1" class="yt-container hidden"><div id="ytapiplayer1"></div></div>
+    <div id="debug"></div>
 
 			<script type="text/javascript">
 
