@@ -19,6 +19,7 @@ Player.prototype.init = function(options) {
 	this.currentTime = 0;
 	this.duration = 0;
 	this.volume = 0;
+	this.playtime = 0;
 	this.element = null;
 	this.paused = true;
 	this.looped = false;
@@ -53,6 +54,7 @@ Player.prototype.attachHandlers = function() {
 		$this.dispatchEvent('pause');
 	});
 	this.element.addEventListener('timeupdate', function() {
+		$this.playtime += this.currentTime - $this.currentTime;
 		$this.currentTime = this.currentTime;
 		$this.dispatchEvent('timeupdate');
 	});

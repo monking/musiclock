@@ -3,7 +3,7 @@
 	<head>
 		<title>MusiClock</title>
 		<script type="text/javascript" src="js/swfobject/swfobject.js"></script>
-		<script type="text/javascript" src="http://www.youtube.com/player_api"></script>
+		<script type="text/javascript" src="//www.youtube.com/player_api"></script>
 		<script type="text/javascript" src="js/eventdispatcher.js"></script>
 		<script type="text/javascript" src="js/utils.js"></script>
 		<script type="text/javascript" src="js/musiclock.js"></script>
@@ -24,6 +24,7 @@ window.onload=function(){
 			<button class="prev">&laquo; prev</button>
 			<button class="next">next &raquo;</button>
 			<label><input type="checkbox" class="repeat"> repeat</label>
+			<label><input type="text" class="minPlaytime"> min. playtime (for tracks with A/B points set)</label>
 		</section>
 		<section id="players">
 			<audio id="htplayer0" controls></audio>
