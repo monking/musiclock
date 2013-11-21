@@ -27,6 +27,32 @@ var toggleClass = function(element, className, override) {
 	return added;
 };
 
+window.formatSeconds = function(seconds) {
+  console.log(seconds);
+  if (seconds < 60) {
+    return Math.floor(seconds) + " seconds";
+  } else if (seconds < 3600) {
+    return Math.floor(seconds / 60) + " minutes";
+  } else if (seconds < 86400) {
+    return Math.floor(seconds / 3600) + " hours";
+  } else {
+    return Math.floor(seconds / 86400) + " days";
+  }
+  
+}
+
+window.getRangeLog = function(element, pow) {
+  // assumes min is zero
+  pow = pow || 2;
+  return Math.pow(element.value, pow) / Math.pow(element.attributes.max.value, pow - 1);
+};
+
+window.setRangeLog = function(element, value, pow) {
+  // assumes min is zero
+  pow = pow || 2;
+  element.value = Math.pow(value, pow) / Math.pow(element.attributes.max.value, pow- 1);
+};
+
 window.log = function(message) {
   document.getElementById("debug").innerHTML = message;
 };

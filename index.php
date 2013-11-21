@@ -24,7 +24,8 @@ window.onload=function(){
 			<button class="prev">&laquo; prev</button>
 			<button class="next">next &raquo;</button>
 			<label><input type="checkbox" class="repeat"> repeat</label>
-			<label><input type="text" class="minPlaytime"> min. playtime (for tracks with A/B points set)</label>
+			<label><input type="checkbox" class="single"> single</label>
+			<label><input type="range" min="0" max="10800" scale="log" class="minPlaytime"> A/B minimum <span class="minPlaytime-value"></span></label>
 		</section>
 		<section id="players">
 			<audio id="htplayer0" controls></audio>
