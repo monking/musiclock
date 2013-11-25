@@ -1,8 +1,9 @@
 /*
  * MusiClock
  */
-var MusiClock = function(data) {
-  this.data = data;
+var MusiClock = function(options) {
+  this.basePath = options.basePath;
+  this.data = options.library;
 };
 MusiClock.prototype = {
   init: function() {
@@ -35,8 +36,8 @@ MusiClock.prototype = {
     this.currentPlayerIndex = 0;
     this.players = {
       "html": [
-        new Player({id:'htplayer0'}),
-        new Player({id:'htplayer1'})
+        new Player({id:'htplayer0', basePath:this.basePath}),
+        new Player({id:'htplayer1', basePath:this.basePath})
       ],
       "youtube": [
         new YTPlayer({id:'ytplayer0',replace:'ytapiplayer0',container:'ytcontainer0'}),
@@ -568,8 +569,8 @@ MusiClock.prototype = {
     this.controls.minPlaytime = element.getElementsByClassName('minPlaytime')[0];
     this.controls.minPlaytimeValue = element.getElementsByClassName('minPlaytime-value')[0];
     if (this.controls.minPlaytime) {
-      setRangeLog(this.controls.minPlaytime, this.state.minPlaytime, 3);
-      this.controls.minPlaytime.onchange = function() { $this.setMinPlaytime(getRangeLog(this, 3)); };
+      setRangeLog(this.controls.minPlaytime, this.state.minPlaytime, 4);
+      this.controls.minPlaytime.onchange = function() { $this.setMinPlaytime(getRangeLog(this, 4)); };
     }
     this.setMinPlaytime(this.state.minPlaytime);
   },

@@ -1,4 +1,5 @@
 /*
+ *
  * Player
  */
 ;var Player = function(options) {
@@ -7,7 +8,8 @@
 Player.prototype = new EventDispatcher();
 Player.constructor = Player;
 Player.prototype.defaults = {
-  id: null
+  id: null,
+  basePath: ''
 };
 Player.prototype.init = function(options) {
   options = options || {};
@@ -77,7 +79,7 @@ Player.prototype.attachHandlers = function() {
 Player.prototype.load = function(src) {
   this.playtime = 0;
   this.seeking = true;
-  this.element.innerHTML = '<source src="audio/' + src + '" />';
+  this.element.innerHTML = '<source src="' + this.options.basePath + '/' + src + '" />';
   if (this.element.pause) this.element.pause();
   this.element.load();
 };

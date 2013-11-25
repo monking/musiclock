@@ -28,16 +28,22 @@ var toggleClass = function(element, className, override) {
 };
 
 window.formatSeconds = function(seconds) {
+  value = 0;
+  unit = "";
   if (seconds < 60) {
-    return Math.floor(seconds) + " seconds";
+    value = Math.floor(seconds);
+    unit = "second";
   } else if (seconds < 3600) {
-    return Math.floor(seconds / 60) + " minutes";
+    value = Math.floor(seconds / 60);
+    unit = "minute";
   } else if (seconds < 86400) {
-    return Math.floor(seconds / 3600) + " hours";
+    value = Math.floor(seconds / 3600);
+    unit = "hour";
   } else {
-    return Math.floor(seconds / 86400) + " days";
+    value = Math.floor(seconds / 86400);
+    unit = "day";
   }
-  
+  return value + " " + unit + (value != 1 ? "s" : "");
 }
 
 window.getRangeLog = function(element, pow) {
