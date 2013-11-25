@@ -521,10 +521,13 @@ MusiClock.prototype = {
       this.controls.single.checked = this.state.single;
     }
   },
-  setMinPlaytime: function(value) {
+  setMinPlaytime: function(value, update) {
     this.state.minPlaytime = Number(value);
     if (this.controls.minPlaytimeValue) {
       this.controls.minPlaytimeValue.innerHTML = formatSeconds(value);
+      if (update !== false) {
+        setRangeLog(this.controls.minPlaytime, this.state.minPlaytime, 4);
+      }
     }
   },
   setVolume: function(volume, noState) {
@@ -569,8 +572,7 @@ MusiClock.prototype = {
     this.controls.minPlaytime = element.getElementsByClassName('minPlaytime')[0];
     this.controls.minPlaytimeValue = element.getElementsByClassName('minPlaytime-value')[0];
     if (this.controls.minPlaytime) {
-      setRangeLog(this.controls.minPlaytime, this.state.minPlaytime, 4);
-      this.controls.minPlaytime.onchange = function() { $this.setMinPlaytime(getRangeLog(this, 4)); };
+      this.controls.minPlaytime.onchange = function() { $this.setMinPlaytime(getRangeLog(this, 4), false); };
     }
     this.setMinPlaytime(this.state.minPlaytime);
   },

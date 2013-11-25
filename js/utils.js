@@ -55,7 +55,7 @@ window.getRangeLog = function(element, pow) {
 window.setRangeLog = function(element, value, pow) {
   // assumes min is zero
   pow = pow || 2;
-  element.value = Math.pow(value, pow) / Math.pow(element.attributes.max.value, pow- 1);
+  element.value = Math.pow(value * Math.pow(element.attributes.max.value, pow - 1), 1 / pow);
 };
 
 window.log = function(message) {
