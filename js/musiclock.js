@@ -20,6 +20,7 @@ MusiClock.prototype = {
         volume          : 1,
         paused          : false,
         single          : false,
+        shuffle         : false,
         repeat          : false,
         minPlaytime     : 100
       });
@@ -258,6 +259,7 @@ MusiClock.prototype = {
       currentPlayer.setVolume(this.state.volume);
       this.toggleRepeat(this.state.repeat);
       this.toggleSingle(this.state.single);
+      this.toggleShuffle(this.state.shuffle);
     }
   },
   markupControls: function() {
@@ -305,7 +307,8 @@ MusiClock.prototype = {
         case 76  : $this.nextTrack();          break; /* l */
         case 77  : $this.toggleMute();         break; /* m */
         case 82  : $this.toggleRepeat();       break; /* r */
-        case 83  : $this.toggleSingle();       break; /* r */
+        case 83  : $this.toggleSingle();       break; /* s */
+     // case ??  : $this.toggleSShuffle();     break; /* ? */
         case 187 : $this.upVolume();           break; /* = */
         case 189 : $this.downVolume();         break; /* - */
         default  : return true;
@@ -317,7 +320,7 @@ MusiClock.prototype = {
   getTrackStates: function(playlistName) {
     var playlist, now, dateString, nowTime, regular, negative, exclusive,
       i, rules, j, fragments, startTime, endTime, active, states;
-    
+
     playlist = this.data.playlists[playlistName || this.state.playlist];
     now = new Date();
     nowTime = now.getTime();
@@ -463,10 +466,26 @@ MusiClock.prototype = {
     // element
   },
   prevTrack: function() {
+    // FIXME: if shuffling, get last played, not previous in playlist
     this.update({track:this.getFirstActiveTrackIndex(this.state.track - 1, -1)});
   },
   nextTrack: function() {
-    this.update({track:this.getFirstActiveTrackIndex(this.state.track + 1)});
+    var trackIndex, activeTracks, i, len;
+    if (this.state.shuffle) {
+      activeTracks = [];
+      for (i = 0, len = this.state.trackStates.length; i < len; i++) {
+        if (this.state.trackStates[i] && i !== this.state.track)
+          activeTracks.push(i);
+      }
+      if (activeTracks.length) {
+        trackIndex = activeTracks[Math.floor(Math.random() * activeTracks.length)];
+      } else {
+        trackIndex = this.state.track;
+      }
+    } else {
+      trackIndex = this.getFirstActiveTrackIndex(this.state.track + 1);
+    }
+    this.update({track:trackIndex});
   },
   seekPortion: function(portion) {
     var player = this.getCurrentPlayer();
@@ -521,6 +540,16 @@ MusiClock.prototype = {
       this.controls.single.checked = this.state.single;
     }
   },
+  toggleShuffle: function(shuffle) {
+    if (typeof shuffle !== "undefined")
+      this.state.shuffle = shuffle;
+    else
+      this.state.shuffle = !this.state.shuffle;
+
+    if (this.controls && this.controls.shuffle) {
+      this.controls.shuffle.checked = this.state.shuffle;
+    }
+  },
   setMinPlaytime: function(value, update) {
     this.state.minPlaytime = Number(value);
     if (this.controls.minPlaytimeValue) {
@@ -568,6 +597,10 @@ MusiClock.prototype = {
     this.controls.single = element.getElementsByClassName('single')[0];
     if (this.controls.single) this.controls.single.onclick = function() { $this.toggleSingle(); };
     this.toggleSingle(!!this.state.single);
+
+    this.controls.shuffle = element.getElementsByClassName('shuffle')[0];
+    if (this.controls.shuffle) this.controls.shuffle.onclick = function() { $this.toggleShuffle(); };
+    this.toggleShuffle(!!this.state.shuffle);
 
     this.controls.minPlaytime = element.getElementsByClassName('minPlaytime')[0];
     this.controls.minPlaytimeValue = element.getElementsByClassName('minPlaytime-value')[0];

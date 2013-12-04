@@ -28,6 +28,7 @@ window.onload=function(){
 			<button class="prev">&laquo; prev</button>
 			<button class="next">next &raquo;</button>
 			<label><input type="checkbox" class="repeat"> repeat</label>
+			<label><input type="checkbox" class="shuffle"> shuffle</label>
 			<label><input type="checkbox" class="single"> single</label>
 			<label><input type="range" min="0" max="86400" scale="log" class="minPlaytime"> A/B minimum <span class="minPlaytime-value"></span></label>
 		</section>
