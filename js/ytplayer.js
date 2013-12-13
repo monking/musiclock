@@ -10,7 +10,10 @@ YTPlayer.constructor = YTPlayer;
 Player.prototype.defaults = {
   id: null,
   replace: null,
-  container: null
+  container: null,
+  updateInterval: 17,
+  playerWidth: 425,
+  playerHeight: 350
 };
 YTPlayer.prototype.setElement = function(element) {
   this.element = element;
@@ -56,14 +59,19 @@ YTPlayer.prototype.attachHandlers = function() {
 
     oldTime = $this.currentTime;
     $this.currentTime = $this.element.getCurrentTime();
-    if (oldTime !== $this.currentTime)
+    if (oldTime !== $this.currentTime) {
+      if (!$this.seeking) {
+        $this.playtime += $this.currentTime - oldTime;
+      }
+      $this.seeking = false;
       $this.dispatchEvent('timeupdate');
+    }
 
     oldVolume = $this.volume;
     $this.volume = $this.element.getVolume() / 100;
     if (oldVolume !== $this.volume)
       $this.dispatchEvent('volumechange');
-  }, 250);
+  }, this.options.updateInterval);
 };
 YTPlayer.prototype.load = function(src) {
   if (this.element) {
@@ -72,7 +80,10 @@ YTPlayer.prototype.load = function(src) {
     var params = { allowScriptAccess: "always" };
     var atts = { id: this.options.id };
     swfobject.embedSWF("http://www.youtube.com/v/" + src + "?enablejsapi=1&playerapiid=" + this.options.id + "&version=3&autoplay=1&loop=" + (this.options.loop ? "1" : "0"),
-      this.options.replace, "425", "350", "8", null, null, params, atts);
+      this.options.replace,
+      this.options.playerWidth,
+      this.options.playerHeight,
+      "8", null, null, params, atts);
     return;
   }
   // FIXME: carry MusiClock.state.time into startSeconds
@@ -85,6 +96,7 @@ YTPlayer.prototype.pause = function() {
 };
 YTPlayer.prototype.seek = function(seekTo) {
   if (this.currentTime === seekTo) return;
+  this.seeking = true;
   this.currentTime = seekTo;
   if (this.element) {
     this.element.seekTo(seekTo);
