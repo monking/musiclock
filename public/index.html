@@ -5,14 +5,17 @@
 		<link type="image/png" rel="favicon" href="/favicon.png" />
 		<meta type="description" content="Make yourself a tune sandwich!" />
 		<meta type="keywords" content="remix playlist loop background bgm vgm ambient music" />
-		<script type="text/javascript" src="js/swfobject/swfobject.js"></script>
+		<meta type="viewport" content="user-scalable=no, initial-scale=1.0, max-scale=1.0" />
+		<script type="text/javascript" src="/js/swfobject/swfobject.js"></script>
 		<script type="text/javascript" src="//www.youtube.com/player_api"></script>
-		<script type="text/javascript" src="js/eventdispatcher.js"></script>
-		<script type="text/javascript" src="js/utils.js"></script>
-		<script type="text/javascript" src="js/musiclock.js"></script>
-		<script type="text/javascript" src="js/player.js"></script>
-		<script type="text/javascript" src="js/ytplayer.js"></script>
-		<link type="text/css" rel="stylesheet" href="css/main.css" />
+		<script type="text/javascript" src="/js/eventdispatcher.js"></script>
+		<script type="text/javascript" src="/js/utils.js"></script>
+		<script type="text/javascript" src="/js/musiclock.js"></script>
+		<script type="text/javascript" src="/js/player.js"></script>
+		<script type="text/javascript" src="/js/ytplayer.js"></script>
+		<link rel="stylesheet" type="text/css" href="//fonts.googleapis.com/css?family=Open+Sans:400,300,800" />
+		<link rel="stylesheet" type="text/css" href="//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.css" />
+		<link type="text/css" rel="stylesheet" href="/css/main.css" />
 		<script type="text/javascript">
 			var mc = new MusiClock({library:'/library.json'});
 			window.onload=function(){
@@ -22,22 +25,34 @@
 		</script>
 	</head>
 	<body>
-		<section id="mc_controls">
-			<select id="playlists"></select>
-			<button class="prev">&laquo; prev</button>
-			<button class="next">next &raquo;</button>
-			<label><input type="checkbox" class="repeat"> repeat</label>
-			<label><input type="checkbox" class="shuffle"> shuffle</label>
-			<label><input type="checkbox" class="single"> single</label>
-			<label><input type="range" min="0" max="86400" scale="log" class="minPlaytime"> A/B minimum <span class="minPlaytime-value"></span></label>
+		<header class="global">
+			<nav class="controls wrap">
+				<label rel="min-playtime"><input type="range" min="0" max="86400" scale="log" title="minimum track duration" rel="min-playtime"><span class="value"></span></label>
+				<a class="fa fa-play" title="play/pause" rel="play-pause" data-states="play:fa-play,pause:fa-pause"></a>
+				<a class="fa fa-fast-backward disabled" title="previous" rel="prev"></a>
+				<a class="fa fa-fast-forward" title="previous" rel="next"></a>
+				<a class="fa fa-refresh" title="" rel="repeat" data-states="repeat:fa-refresh,single:fa-repeat"></a>
+				<a class="fa fa-random" title="" rel="shuffle"></a>
+				<a class="fa fa-volume-up" title="volume" rel="volume" data-states="mute:fa-volume-off,low:fa-volume-down,high:fa-volume-up"></a>
+			</nav>
+		</header>
+		<section class="welcome">
+			<h1><img src="/img/logo.png" alt="Tunewich Logo" /> make yourself a tunewich!</h1>
 		</section>
-		<section id="players">
+		<section class="playlist wrap">
+			<select id="playlists"></select>
+		</section>
+		<section class="players">
 			<audio id="htplayer0" controls></audio>
 			<audio id="htplayer1" controls></audio>
 			<div id="ytcontainer0" class="yt-container hidden"><div id="ytapiplayer0"></div></div>
 			<div id="ytcontainer1" class="yt-container hidden"><div id="ytapiplayer1"></div></div>
 			<div id="debug"></div>
 		</section>
-		<section id="list"></section>
+		<footer class="global">
+			<nav class="wrap">
+				&copy; 2014 Christopher Lovejoy
+			</nav>
+		</footer>
 	</body>
 </html>
