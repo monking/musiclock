@@ -1,4 +1,4 @@
 audio
 playlists.json
-library.json
+library*.json
 config/config.php

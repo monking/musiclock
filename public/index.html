@@ -2,10 +2,12 @@
 <html>
 	<head>
 		<title>Tunewich!</title>
-		<link type="image/png" rel="favicon" href="/favicon.png" />
 		<meta type="description" content="Make yourself a tune sandwich!" />
 		<meta type="keywords" content="remix playlist loop background bgm vgm ambient music" />
 		<meta type="viewport" content="user-scalable=no, initial-scale=1.0, max-scale=1.0" />
+		<link rel="stylesheet" type="text/css" href="//fonts.googleapis.com/css?family=Open+Sans:400,300,800" />
+		<link rel="stylesheet" type="text/css" href="//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.css" />
+		<link type="text/css" rel="stylesheet" href="/css/main.css" />
 		<script type="text/javascript" src="/js/swfobject/swfobject.js"></script>
 		<script type="text/javascript" src="//www.youtube.com/player_api"></script>
 		<script type="text/javascript" src="/js/eventdispatcher.js"></script>
@@ -13,16 +15,8 @@
 		<script type="text/javascript" src="/js/musiclock.js"></script>
 		<script type="text/javascript" src="/js/player.js"></script>
 		<script type="text/javascript" src="/js/ytplayer.js"></script>
-		<link rel="stylesheet" type="text/css" href="//fonts.googleapis.com/css?family=Open+Sans:400,300,800" />
-		<link rel="stylesheet" type="text/css" href="//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.css" />
-		<link type="text/css" rel="stylesheet" href="/css/main.css" />
-		<script type="text/javascript">
-			var mc = new MusiClock({library:'/library.json'});
-			window.onload=function(){
-				mc.init();
-				mc.setListControls(document.getElementById('mc_controls'));
-			};
-		</script>
+		<script type="text/javascript" src="/js/main.js"></script>
+		<link type="image/png" rel="favicon" href="/favicon.png" />
 	</head>
 	<body>
 		<header class="global">
