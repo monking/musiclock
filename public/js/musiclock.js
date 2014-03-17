@@ -439,7 +439,7 @@ MusiClock.prototype = {
       loopCount = Math.ceil((this.state.minPlaytime - trackDuration) / loopDuration);
       totalPlaytime = trackDuration + loopCount * loopDuration
     }
-    progress = this.state.time / totalPlaytime;
+    progress = currentPlayer.playtime / totalPlaytime;
     progressBar.style.width = (progress * 100) + '%';
   },
   getFirstPlaylist: function() {

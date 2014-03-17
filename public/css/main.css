@@ -108,12 +108,16 @@ article.track h3 {
   line-height: 40px;
 }
 article.track .progress {
+  display: none;
   width: 0%;
   height: 6px;
   background-color: rgb(255,178,164);
   position: absolute;
   bottom: 0;
   z-index: -1;
+}
+article.track.current .progress {
+  display: block;
 }
 article.track .state {
   font-family: 'FontAwesome';
