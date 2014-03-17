@@ -1,0 +1,249 @@
+body {
+  margin: 0;
+  padding: 0;
+  color: #333;
+  font-family: 'Open Sans', sans-serif;
+}
+
+header, section, footer {
+  display: block;
+}
+
+.wrap {
+  width: 800px;
+  max-width: 100%;
+  margin: 0 auto;
+}
+
+header.global {
+  position: fixed;
+  z-index: 1;
+  width: 100%;
+  height: 40px;
+  line-height: 40px;
+
+  nav {
+    background-color: #FFF;
+    padding: 0 1em;
+    position: relative;
+    box-sizing: border-box;
+    -moz-box-sizing: border-box;
+  }
+
+  nav {
+    box-shadow: 0 10px 20px -5px rgba(0, 0, 0, 0.3);
+    top: -20px;
+    padding-top: 20px;
+  }
+}
+
+
+.controls {
+
+  input {
+    vertical-align: middle;
+  }
+
+  label .value {
+    display: inline-block;
+    min-width: 4.5em;
+    padding-left: 0.5em;
+  }
+
+  a {
+    color: #000;
+    text-decoration: none;
+    cursor: pointer;
+    padding: 0 0.2em;
+
+    &:hover {
+      color: salmon;
+    }
+
+    &.inactive {
+      color: #EEE;
+      text-shadow: -1pt -1pt 0 #000;
+      position: relative;
+      top: 1pt;
+      left: 1pt;
+    }
+
+    &.inactive:hover {
+      color: #EEE;
+      text-shadow: -1px -1px 0 salmon;
+    }
+
+    &.inactive {
+      color: #EEE;
+      text-shadow: -1px -1px 0 #000;
+    }
+
+  }
+
+}
+
+section.welcome {
+  background-color: salmon;
+  position: relative;
+
+  h1 {
+    margin: 0;
+    padding: 40px 0 0;
+    text-align: center;
+    font-weight: 100;
+    font-size: 40px;
+    color: #FFF;
+    text-shadow: 0 2px 5px darken($accent, 50%);
+    letter-spacing: -1pt;
+  }
+
+  img {
+    height: 150px;
+    width: auto;
+    vertical-align: middle;
+    margin: 0 0.5em 0 0;
+    transition-property: height left;
+    transition-duration: 0.3s;
+  }
+
+}
+
+
+section.playlist {
+  padding-top: 2em;
+  padding: 1em;
+  box-sizing: border-box;
+  -moz-box-sizing: border-box;
+}
+
+article.track {
+  overflow: hidden;
+  position: relative;
+  padding-bottom: 6px;
+  border-bottom: 1px solid $accent;
+  height: 40px;
+
+  h3 {
+    margin: 0;
+    font-weight: inherit;
+    line-height: 40px;
+    float: left;
+  }
+
+  .source {
+    color: #000;
+    display: block;
+    float: right;
+    font-size: 1.2em;
+    line-height: 40px;
+  }
+
+  .progress-bar {
+    width: 0%;
+    height: 100%;
+    background-color: $accent;
+    opacity: 0.3; // FIXME: install normalize and use `@include opacity(0.1)` polyfill
+    position: absolute;
+    top: 0;
+    z-index: -1;
+  }
+
+  .current-time-bar {
+    width: 0%;
+    height: 6px;
+    background-color: $accent;
+    position: absolute;
+    bottom: 0;
+  }
+
+  .state {
+    font-family: 'FontAwesome';
+    display: inline-block;
+    width: 1em;
+    text-align: center;
+    padding-right: 0.3em;
+    color: #999;
+  }
+
+  .state:before {
+    content: "\f04b";
+    /* play */
+  }
+
+  &:hover .state:before,
+  &.current:hover .state:before {
+    color: darken($accent, 20%);
+  }
+
+  &.current .state:before {
+    content: "\f04c";
+    /* pause */
+    color: #000;
+  }
+
+}
+
+
+section.players {
+  position: absolute;
+  width: 0;
+  height: 0;
+  visibility: hidden;
+  overflow: hidden;
+}
+
+audio {
+  display: block;
+  margin: 0 0 10px;
+}
+
+#list {
+
+  .current {
+    background-color: #CCC;
+    color: #000;
+  }
+
+  .inactive {
+    opacity: 0.3;
+  }
+
+}
+
+.track {
+  cursor: pointer;
+}
+
+audio {
+  display: none;
+}
+
+.yt-container.hidden {
+  visibility: hidden;
+  position: absolute;
+  z-index: 0;
+}
+
+@media (max-width: 768px) {
+
+  section.welcome {
+
+    h1 {
+      padding-bottom: 40px;
+    }
+
+    img {
+      padding-top: 20px;
+      height: 200px;
+      display: block;
+      margin: 0 auto;
+    }
+
+  }
+
+  .controls {
+    font-size: 24px;
+    line-height: 60px;
+  }
+
+}

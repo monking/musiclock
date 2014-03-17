@@ -2,3 +2,4 @@ audio
 playlists.json
 library*.json
 config/config.php
+node_modules/

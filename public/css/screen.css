@@ -4,18 +4,17 @@ body {
   color: #333;
   font-family: 'Open Sans', sans-serif;
 }
-*::selection, *::-moz-selection {
-  background: rgb(200,78,64);
-  color: #FFF;
-}
+
 header, section, footer {
   display: block;
 }
+
 .wrap {
   width: 800px;
   max-width: 100%;
   margin: 0 auto;
 }
+
 header.global {
   position: fixed;
   z-index: 1;
@@ -31,14 +30,15 @@ header.global nav {
   -moz-box-sizing: border-box;
 }
 header.global nav {
-  box-shadow: 0 10px 20px -5px rgba(0,0,0,0.3);
+  box-shadow: 0 10px 20px -5px rgba(0, 0, 0, 0.3);
   top: -20px;
   padding-top: 20px;
 }
+
 .controls input {
   vertical-align: middle;
 }
-label .value {
+.controls label .value {
   display: inline-block;
   min-width: 4.5em;
   padding-left: 0.5em;
@@ -50,7 +50,7 @@ label .value {
   padding: 0 0.2em;
 }
 .controls a:hover {
-  color: rgb(250, 128, 114);
+  color: salmon;
 }
 .controls a.inactive {
   color: #EEE;
@@ -61,14 +61,15 @@ label .value {
 }
 .controls a.inactive:hover {
   color: #EEE;
-  text-shadow: -1px -1px 0 rgb(250, 128, 114);
+  text-shadow: -1px -1px 0 salmon;
 }
 .controls a.inactive {
   color: #EEE;
   text-shadow: -1px -1px 0 #000;
 }
+
 section.welcome {
-  background-color: rgb(250, 128, 114);
+  background-color: salmon;
   position: relative;
 }
 section.welcome h1 {
@@ -78,46 +79,60 @@ section.welcome h1 {
   font-weight: 100;
   font-size: 40px;
   color: #FFF;
-  text-shadow: 0 2px 5px rgb(200,78,64);
+  text-shadow: 0 2px 5px #a41900;
   letter-spacing: -1pt;
 }
 section.welcome img {
-  height: 300px;
+  height: 150px;
   width: auto;
   vertical-align: middle;
   margin: 0 0.5em 0 0;
   transition-property: height left;
   transition-duration: 0.3s;
 }
+
 section.playlist {
   padding-top: 2em;
   padding: 1em;
   box-sizing: border-box;
   -moz-box-sizing: border-box;
 }
+
 article.track {
   overflow: hidden;
   position: relative;
   padding-bottom: 6px;
-  border-bottom: 1px solid rgb(255,178,164);
+  border-bottom: 1px solid #ffb2a4;
   height: 40px;
 }
 article.track h3 {
   margin: 0;
   font-weight: inherit;
   line-height: 40px;
+  float: left;
 }
-article.track .progress {
-  display: none;
+article.track .source {
+  color: #000;
+  display: block;
+  float: right;
+  font-size: 1.2em;
+  line-height: 40px;
+}
+article.track .progress-bar {
   width: 0%;
-  height: 6px;
-  background-color: rgb(255,178,164);
+  height: 100%;
+  background-color: #ffb2a4;
+  opacity: 0.3;
   position: absolute;
-  bottom: 0;
+  top: 0;
   z-index: -1;
 }
-article.track.current .progress {
-  display: block;
+article.track .current-time-bar {
+  width: 0%;
+  height: 6px;
+  background-color: #ffb2a4;
+  position: absolute;
+  bottom: 0;
 }
 article.track .state {
   font-family: 'FontAwesome';
@@ -128,16 +143,18 @@ article.track .state {
   color: #999;
 }
 article.track .state:before {
-  content: "\f04b"; /* play */
+  content: "\f04b";
+  /* play */
 }
-article.track:hover .state:before,
-article.track.current:hover .state:before {
-  color: rgb(200,78,64);
+article.track:hover .state:before, article.track.current:hover .state:before {
+  color: #ff5c3e;
 }
 article.track.current .state:before {
-  content: "\f04c"; /* pause */
+  content: "\f04c";
+  /* pause */
   color: #000;
 }
+
 section.players {
   position: absolute;
   width: 0;
@@ -145,10 +162,12 @@ section.players {
   visibility: hidden;
   overflow: hidden;
 }
+
 audio {
   display: block;
   margin: 0 0 10px;
 }
+
 #list .current {
   background-color: #CCC;
   color: #000;
@@ -156,15 +175,21 @@ audio {
 #list .inactive {
   opacity: 0.3;
 }
+
 .track {
   cursor: pointer;
 }
-audio { display: none; }
+
+audio {
+  display: none;
+}
+
 .yt-container.hidden {
   visibility: hidden;
   position: absolute;
   z-index: 0;
 }
+
 @media (max-width: 768px) {
   section.welcome h1 {
     padding-bottom: 40px;
@@ -175,6 +200,7 @@ audio { display: none; }
     display: block;
     margin: 0 auto;
   }
+
   .controls {
     font-size: 24px;
     line-height: 60px;

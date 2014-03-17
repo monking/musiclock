@@ -1,8 +1,8 @@
-MusiClock
-=========
+Tunewich
+========
 
-A music player with timed playlists. Supports HTML5-playable audio and YouTube
-videos.
+A music player built on loops and samples extracted on the fly. Supports
+HTML5-playable audio and YouTube videos.
 
 Features
 --------
