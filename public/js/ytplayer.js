@@ -24,28 +24,28 @@ YTPlayer.prototype.setElement = function(element) {
   this.dispatchEvent('canplay');
 };
 YTPlayer.prototype.attachHandlers = function() {
-  var $this = this;
+  var self = this;
   var stateHandlerName = this.options.id + 'StateHandler';
   window[stateHandlerName] = function(state) {
     switch(state) {
       case -1:
         break;
       case 0:
-        if($this.looped) {
-          $this.seek(0);
-          $this.play();
+        if(self.looped) {
+          self.seek(0);
+          self.play();
         } else {
-          $this.paused = true;
-          $this.dispatchEvent('ended');
+          self.paused = true;
+          self.dispatchEvent('ended');
         }
         break;
       case 1:
-        $this.paused = false;
-        $this.dispatchEvent('play');
+        self.paused = false;
+        self.dispatchEvent('play');
         break;
       case 2:
-        $this.paused = true;
-        $this.dispatchEvent('pause');
+        self.paused = true;
+        self.dispatchEvent('pause');
         break;
       case 3:
         break;
@@ -57,20 +57,25 @@ YTPlayer.prototype.attachHandlers = function() {
   this.currentTimeInterval = setInterval(function() {
     var oldTime, oldVolume;
 
-    oldTime = $this.currentTime;
-    $this.currentTime = $this.element.getCurrentTime();
-    if (oldTime !== $this.currentTime) {
-      if (!$this.seeking) {
-        $this.playtime += $this.currentTime - oldTime;
+    oldTime = self.currentTime;
+    self.currentTime = self.element.getCurrentTime();
+    if (oldTime !== self.currentTime) {
+      if (!self.seeking) {
+        self.playtime += self.currentTime - oldTime;
       }
-      $this.seeking = false;
-      $this.dispatchEvent('timeupdate');
+      self.seeking = false;
+      self.dispatchEvent('timeupdate');
     }
 
-    oldVolume = $this.volume;
-    $this.volume = $this.element.getVolume() / 100;
-    if (oldVolume !== $this.volume)
-      $this.dispatchEvent('volumechange');
+    oldVolume = self.volume;
+    self.volume = self.element.getVolume() / 100;
+    if (oldVolume !== self.volume
+    && this.fadeVolumeInterval !== null
+    && (
+      !this.muted || this.volume > 0
+    )) {
+      self.dispatchEvent('volumechange');
+    }
   }, this.options.updateInterval);
 };
 YTPlayer.prototype.load = function(src) {
@@ -113,6 +118,11 @@ YTPlayer.prototype.setVolume = function(volume) {
   this.volume = volume;
   if (this.element)
     this.element.setVolume(volume * 100);
+};
+YTPlayer.prototype.setMute = function(muted) {
+  this.muted = muted;
+  if (this.element)
+    this.element.setVolume(muted ? 0 : this.volume * 100);
 };
 YTPlayer.prototype.show = function() {
   toggleClass(

@@ -1,119 +1,178 @@
 body {
-	margin: 0;
-	padding: 0;
-	color: #333;
-	font-family: 'Open Sans', sans-serif;
+  margin: 0;
+  padding: 0;
+  color: #333;
+  font-family: 'Open Sans', sans-serif;
+}
+*::selection, *::-moz-selection {
+  background: rgb(200,78,64);
+  color: #FFF;
 }
 header, section, footer {
-	display: block;
+  display: block;
 }
 .wrap {
-	width: 800px;
-	max-width: 100%;
-	margin: 0 auto;
+  width: 800px;
+  max-width: 100%;
+  margin: 0 auto;
 }
 header.global {
-	position: fixed;
-	z-index: 1;
-	width: 100%;
-	height: 40px;
-	line-height: 40px;
+  position: fixed;
+  z-index: 1;
+  width: 100%;
+  height: 40px;
+  line-height: 40px;
 }
 header.global nav {
-	background-color: #FFF;
-	padding: 0 1em;
-	position: relative;
-	box-sizing: border-box;
-	-moz-box-sizing: border-box;
+  background-color: #FFF;
+  padding: 0 1em;
+  position: relative;
+  box-sizing: border-box;
+  -moz-box-sizing: border-box;
 }
 header.global nav {
-	box-shadow: 0 10px 20px -5px rgba(0,0,0,0.3);
-	top: -20px;
-	padding-top: 20px;
+  box-shadow: 0 10px 20px -5px rgba(0,0,0,0.3);
+  top: -20px;
+  padding-top: 20px;
 }
 .controls input {
-	vertical-align: middle;
+  vertical-align: middle;
 }
 label .value {
-	display: inline-block;
-	min-width: 4.5em;
-	padding-left: 0.5em;
+  display: inline-block;
+  min-width: 4.5em;
+  padding-left: 0.5em;
 }
 .controls a {
-	color: #000;
-	opacity: 0.9;
-	text-decoration: none;
-	cursor: pointer;
-	padding: 0 0.2em;
+  color: #000;
+  text-decoration: none;
+  cursor: pointer;
+  padding: 0 0.2em;
 }
 .controls a:hover {
-	opacity: 1;
+  color: rgb(250, 128, 114);
 }
 .controls a.inactive {
-	opacity: 0.6;
+  color: #EEE;
+  text-shadow: -1pt -1pt 0 #000;
+  position: relative;
+  top: 1pt;
+  left: 1pt;
 }
-.controls a.disabled, .controls a.disabled:hover {
-	opacity: 0.2;
-	cursor: default;
+.controls a.inactive:hover {
+  color: #EEE;
+  text-shadow: -1px -1px 0 rgb(250, 128, 114);
+}
+.controls a.inactive {
+  color: #EEE;
+  text-shadow: -1px -1px 0 #000;
 }
 section.welcome {
-	background-color: rgb(250, 128, 114);
-	position: relative;
+  background-color: rgb(250, 128, 114);
+  position: relative;
 }
 section.welcome h1 {
-	margin: 0;
-	padding: 40px 0 0;
-	text-align: center;
-	font-weight: 100;
-	font-size: 40px;
-	color: #FFF;
-	text-shadow: 0 2px 5px rgb(200,78,64);
-	letter-spacing: -1pt;
+  margin: 0;
+  padding: 40px 0 0;
+  text-align: center;
+  font-weight: 100;
+  font-size: 40px;
+  color: #FFF;
+  text-shadow: 0 2px 5px rgb(200,78,64);
+  letter-spacing: -1pt;
 }
 section.welcome img {
-	height: 300px;
-	width: auto;
-	vertical-align: middle;
-	margin: 0 0.5em 0 0;
+  height: 300px;
+  width: auto;
+  vertical-align: middle;
+  margin: 0 0.5em 0 0;
+  transition-property: height left;
+  transition-duration: 0.3s;
 }
 section.playlist {
-	min-height: 800px;
-	padding-top: 2em;
-	background-color: #FFF;
-	padding: 1em;
-	box-sizing: border-box;
-	-moz-box-sizing: border-box;
+  padding-top: 2em;
+  padding: 1em;
+  box-sizing: border-box;
+  -moz-box-sizing: border-box;
+}
+article.track {
+  overflow: hidden;
+  position: relative;
+  padding-bottom: 6px;
+  border-bottom: 1px solid rgb(255,178,164);
+  height: 40px;
+}
+article.track h3 {
+  margin: 0;
+  font-weight: inherit;
+  line-height: 40px;
+}
+article.track .progress {
+  width: 0%;
+  height: 6px;
+  background-color: rgb(255,178,164);
+  position: absolute;
+  bottom: 0;
+  z-index: -1;
+}
+article.track .state {
+  font-family: 'FontAwesome';
+  display: inline-block;
+  width: 1em;
+  text-align: center;
+  padding-right: 0.3em;
+  color: #999;
+}
+article.track .state:before {
+  content: "\f04b"; /* play */
+}
+article.track:hover .state:before,
+article.track.current:hover .state:before {
+  color: rgb(200,78,64);
+}
+article.track.current .state:before {
+  content: "\f04c"; /* pause */
+  color: #000;
+}
+section.players {
+  position: absolute;
+  width: 0;
+  height: 0;
+  visibility: hidden;
+  overflow: hidden;
 }
 audio {
-	display: block;
-	margin: 0 0 10px;
+  display: block;
+  margin: 0 0 10px;
 }
 #list .current {
-	background-color: #CCC;
-	color: #000;
+  background-color: #CCC;
+  color: #000;
 }
 #list .inactive {
-	opacity: 0.5;
+  opacity: 0.3;
 }
 .track {
-	cursor: pointer;
+  cursor: pointer;
 }
 audio { display: none; }
 .yt-container.hidden {
-	visibility: hidden;
-	position: absolute;
-	z-index: 0;
+  visibility: hidden;
+  position: absolute;
+  z-index: 0;
 }
 @media (max-width: 768px) {
-	section.welcome h1 {
-		padding-bottom: 40px;
-	}
-	section.welcome img {
-		display: block;
-		margin: 0 auto;
-	}
-	.controls {
-		font-size: 24px;
-		line-height: 60px;
-	}
+  section.welcome h1 {
+    padding-bottom: 40px;
+  }
+  section.welcome img {
+    padding-top: 20px;
+    height: 200px;
+    display: block;
+    margin: 0 auto;
+  }
+  .controls {
+    font-size: 24px;
+    line-height: 60px;
+  }
 }

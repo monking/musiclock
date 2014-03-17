@@ -1,52 +1,59 @@
 <!DOCTYPE html>
 <html>
-	<head>
-		<title>Tunewich!</title>
-		<meta type="description" content="Make yourself a tune sandwich!" />
-		<meta type="keywords" content="remix playlist loop background bgm vgm ambient music" />
-		<meta type="viewport" content="user-scalable=no, initial-scale=1.0, max-scale=1.0" />
-		<link rel="stylesheet" type="text/css" href="//fonts.googleapis.com/css?family=Open+Sans:400,300,800" />
-		<link rel="stylesheet" type="text/css" href="//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.css" />
-		<link type="text/css" rel="stylesheet" href="/css/main.css" />
-		<script type="text/javascript" src="/js/swfobject/swfobject.js"></script>
-		<script type="text/javascript" src="//www.youtube.com/player_api"></script>
-		<script type="text/javascript" src="/js/eventdispatcher.js"></script>
-		<script type="text/javascript" src="/js/utils.js"></script>
-		<script type="text/javascript" src="/js/musiclock.js"></script>
-		<script type="text/javascript" src="/js/player.js"></script>
-		<script type="text/javascript" src="/js/ytplayer.js"></script>
-		<script type="text/javascript" src="/js/main.js"></script>
-		<link type="image/png" rel="favicon" href="/favicon.png" />
-	</head>
-	<body>
-		<header class="global">
-			<nav class="controls wrap">
-				<label rel="min-playtime"><input type="range" min="0" max="86400" scale="log" title="minimum track duration" rel="min-playtime"><span class="value"></span></label>
-				<a class="fa fa-play" title="play/pause" rel="play-pause" data-states="play:fa-play,pause:fa-pause"></a>
-				<a class="fa fa-fast-backward disabled" title="previous" rel="prev"></a>
-				<a class="fa fa-fast-forward" title="previous" rel="next"></a>
-				<a class="fa fa-refresh" title="" rel="repeat" data-states="repeat:fa-refresh,single:fa-repeat"></a>
-				<a class="fa fa-random" title="" rel="shuffle"></a>
-				<a class="fa fa-volume-up" title="volume" rel="volume" data-states="mute:fa-volume-off,low:fa-volume-down,high:fa-volume-up"></a>
-			</nav>
-		</header>
-		<section class="welcome">
-			<h1><img src="/img/logo.png" alt="Tunewich Logo" /> make yourself a tunewich!</h1>
-		</section>
-		<section class="playlist wrap">
-			<select id="playlists"></select>
-		</section>
-		<section class="players">
-			<audio id="htplayer0" controls></audio>
-			<audio id="htplayer1" controls></audio>
-			<div id="ytcontainer0" class="yt-container hidden"><div id="ytapiplayer0"></div></div>
-			<div id="ytcontainer1" class="yt-container hidden"><div id="ytapiplayer1"></div></div>
-			<div id="debug"></div>
-		</section>
-		<footer class="global">
-			<nav class="wrap">
-				&copy; 2014 Christopher Lovejoy
-			</nav>
-		</footer>
-	</body>
+  <head>
+    <title>Tunewich!</title>
+    <meta type="description" content="Make yourself a tune sandwich!" />
+    <meta type="keywords" content="remix playlist loop background bgm vgm ambient music" />
+    <meta type="viewport" content="user-scalable=no, initial-scale=1.0, max-scale=1.0" />
+    <link rel="stylesheet" type="text/css" href="//fonts.googleapis.com/css?family=Open+Sans:400,300,800" />
+    <link rel="stylesheet" type="text/css" href="//netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.css" />
+    <link type="text/css" rel="stylesheet" href="/css/main.css" />
+    <script type="text/javascript" src="/js/swfobject/swfobject.js"></script>
+    <script type="text/javascript" src="//www.youtube.com/player_api"></script>
+    <script type="text/javascript" src="/js/eventdispatcher.js"></script>
+    <script type="text/javascript" src="/js/utils.js"></script>
+    <script type="text/javascript" src="/js/musiclock.js"></script>
+    <script type="text/javascript" src="/js/player.js"></script>
+    <script type="text/javascript" src="/js/ytplayer.js"></script>
+    <script type="text/javascript" src="/js/main.js"></script>
+    <link type="image/png" rel="favicon" href="/favicon.png" />
+    <script>
+      (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+       (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+       m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+       })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+      ga('create', 'UA-49035647-1', 'tunewi.ch');
+      ga('send', 'pageview');
+    </script>
+  </head>
+  <body>
+    <header class="global">
+      <nav class="controls wrap">
+        <label rel="min-playtime"><input type="range" min="0" max="86400" scale="log" title="minimum track duration" rel="min-playtime"><span class="value"></span></label>
+        <a class="fa fa-play" title="play/pause" rel="play-pause" data-states="play:fa-play,pause:fa-pause"></a>
+        <a class="fa fa-share" title="let the track play out" rel="soft-skip"></a>
+        <a class="fa fa-random" title="shuffle" rel="shuffle"></a>
+        <a class="fa fa-volume-up" title="volume" rel="volume" data-states="mute:fa-volume-off,low:fa-volume-down,high:fa-volume-up"></a>
+        <select id="playlists"></select>
+      </nav>
+    </header>
+    <section class="welcome">
+      <h1><img src="/img/logo.png" alt="Tunewich Logo" /> make yourself a tunewich!</h1>
+    </section>
+    <section class="playlist wrap" id="playlist">
+    </section>
+    <section class="players">
+      <audio id="htplayer0" controls></audio>
+      <audio id="htplayer1" controls></audio>
+      <div id="ytcontainer0" class="yt-container hidden"><div id="ytapiplayer0"></div></div>
+      <div id="ytcontainer1" class="yt-container hidden"><div id="ytapiplayer1"></div></div>
+      <div id="debug"></div>
+    </section>
+    <footer class="global">
+      <nav class="wrap">
+        &copy; 2014 Christopher Lovejoy
+      </nav>
+    </footer>
+  </body>
 </html>

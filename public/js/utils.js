@@ -32,18 +32,18 @@ window.formatSeconds = function(seconds) {
   unit = "";
   if (seconds < 60) {
     value = Math.floor(seconds);
-    unit = "second";
+    unit = "sec.";
   } else if (seconds < 3600) {
     value = Math.floor(seconds / 60);
-    unit = "minute";
+    unit = "min.";
   } else if (seconds < 86400) {
     value = Math.floor(seconds / 3600);
-    unit = "hour";
+    unit = "hr.";
   } else {
     value = Math.floor(seconds / 86400);
     unit = "day";
   }
-  return value + " " + unit + (value != 1 ? "s" : "");
+  return value + " " + unit + (/[A-z]$/.test(unit) && value != 1 ? "s" : "");
 }
 
 window.getRangeLog = function(element, pow) {

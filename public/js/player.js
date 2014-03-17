@@ -24,6 +24,7 @@ Player.prototype.init = function(options) {
   this.playtime = 0;
   this.element = null;
   this.paused = true;
+  this.muted = false;
   this.seeking = false;
   this.looped = false;
   this.fadeVolumeInterval = null;
@@ -38,42 +39,46 @@ Player.prototype.setElement = function(element) {
   this.attachHandlers();
 };
 Player.prototype.attachHandlers = function() {
-  var $this = this;
+  var self = this;
   this.element.addEventListener('canplay', function() {
-    if ($this.currentTime > 0) {
-      this.currentTime = $this.currentTime;
+    if (self.currentTime > 0) {
+      this.currentTime = self.currentTime;
     } else {
-      $this.currentTime = this.currentTime;
+      self.currentTime = this.currentTime;
     }
-    $this.duration = this.duration;
-    $this.dispatchEvent('canplay');
+    self.duration = this.duration;
+    self.dispatchEvent('canplay');
   });
   this.element.addEventListener('play', function() {
-    $this.paused = false;
-    $this.dispatchEvent('play');
+    self.paused = false;
+    self.dispatchEvent('play');
   });
   this.element.addEventListener('pause', function() {
-    $this.paused = true;
-    $this.dispatchEvent('pause');
+    self.paused = true;
+    self.dispatchEvent('pause');
   });
   this.element.addEventListener('seeking', function() {
-    $this.seeking = true;
+    self.seeking = true;
   });
   this.element.addEventListener('timeupdate', function() {
-    if (!$this.seeking) {
-      $this.playtime += this.currentTime - $this.currentTime;
+    if (!self.seeking) {
+      self.playtime += this.currentTime - self.currentTime;
     }
-    $this.currentTime = this.currentTime;
-    $this.seeking = false;
-    $this.dispatchEvent('timeupdate');
+    self.currentTime = this.currentTime;
+    self.seeking = false;
+    self.dispatchEvent('timeupdate');
   });
   this.element.addEventListener('ended', function() {
-    $this.paused = true;
-    $this.dispatchEvent('ended');
+    self.paused = true;
+    self.dispatchEvent('ended');
   });
   this.element.addEventListener('volumechange', function() {
-    $this.volume = this.volume;
-    $this.dispatchEvent('volumechange');
+    if (this.fadeVolumeInterval !== null && (
+      !this.muted || this.volume > 0
+    )) {
+      self.volume = this.volume;
+      self.dispatchEvent('volumechange');
+    }
   });
 };
 Player.prototype.load = function(src) {
@@ -107,8 +112,14 @@ Player.prototype.setVolume = function(volume) {
   this.volume = volume;
   this.element.volume = volume;
 };
+Player.prototype.setMute = function(muted) {
+  this.muted = muted;
+  this.element.volume = muted ? 0 : volume;
+};
 Player.prototype.fadeVolume = function(options) {
-  var $this = this, fadeIncrement, fadeStep, stopFade, steps, defaults;
+  var self = this, fadeIncrement, fadeStep, stopFade, steps, defaults;
+
+  if (this.fadeVolumeInterval === null) this.fadeVolumeInterval = -1;
 
   defaults = {
     to: 1,
@@ -124,11 +135,17 @@ Player.prototype.fadeVolume = function(options) {
       options[key] = defaults[key];
   }
 
+  stopFade = function(context) {
+    clearInterval(this.fadeVolumeInterval);
+    this.fadeVolumeInterval = null;
+    if (typeof options.callback === "function")
+      options.callback.call(context);
+  };
+
   steps = Math.floor(options.rate * options.duration);
   if (this.paused) {
     this.setVolume(0);
-    if (typeof options.callback === "function")
-      options.callback.apply(false);
+    stopFade(false);
     return;
   }
   if (typeof options.from !== "undefined" && options.from !== null)
@@ -138,18 +155,12 @@ Player.prototype.fadeVolume = function(options) {
   options.to = Math.max(0, Math.min(1, options.to));
   fadeIncrement = (options.to - options.from) / steps;
   fadeStep = function() {
-    if (Math.abs($this.volume - options.to) < Math.abs(fadeIncrement)) {
-      $this.setVolume(options.to);
-      clearInterval($this.fadeVolumeInterval);
-      if (typeof options.callback === "function")
-        options.callback.call($this);
-      setTimeout(function() {
-        // empty fadeVolumeInterval after the stack executes
-        $this.fadeVolumeInterval = null;
-      }, 0);
+    if (Math.abs(self.volume - options.to) < Math.abs(fadeIncrement)) {
+      self.setVolume(options.to);
+      stopFade(self);
       return;
     }
-    $this.setVolume($this.volume + fadeIncrement);
+    self.setVolume(self.volume + fadeIncrement);
   };
   clearInterval(this.fadeVolumeInterval);
   this.fadeVolumeInterval = setInterval(fadeStep, Math.round(1000 / options.rate));

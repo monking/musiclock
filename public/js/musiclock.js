@@ -18,6 +18,7 @@ MusiClock.prototype = {
         track           : 0,
         time            : 0,
         volume          : 1,
+        muted           : false,
         paused          : false,
         single          : false,
         shuffle         : false,
@@ -29,7 +30,7 @@ MusiClock.prototype = {
     this.startTrackingState();
   },
   setupPlayers: function() {
-    var $this = this,
+    var self = this,
       connectPlayer,
       isCurrentPlayer;
 
@@ -46,53 +47,54 @@ MusiClock.prototype = {
       ]
     }
         isCurrentPlayer = function(player) {
-      return player.options.id === $this.players[$this.currentPlayerType][$this.currentPlayerIndex].options.id;
+      return player.options.id === self.players[self.currentPlayerType][self.currentPlayerIndex].options.id;
     };
     connectPlayer = function(type, i) {
-      var player = $this.players[type][i];
+      var player = self.players[type][i];
       player.addEventListener('canplay', function() {
         if (isCurrentPlayer(player)
-        && !$this.state.paused) {
+        && !self.state.paused) {
           console.log(player.options.id + ': ' + arguments[0].type);
-          player.seek($this.state.time);
+          player.seek(self.state.time);
           player.play();
         }
       });
       player.addEventListener('play', function() {
         if (isCurrentPlayer(player)) {
           console.log(player.options.id + ': ' + arguments[0].type);
-          $this.state.paused = false;
+          self.state.paused = false;
         }
       });
       player.addEventListener('pause', function() {
         if (isCurrentPlayer(player)) {
           console.log(player.options.id + ': ' + arguments[0].type);
-          $this.state.paused = true;
+          self.state.paused = true;
         }
       });
       player.addEventListener('timeupdate', function() {
         var currentTrack;
         if (isCurrentPlayer(player)) {
-          $this.state.time = player.currentTime;
-          currentTrack = $this.getTrack();
+          self.state.time = player.currentTime;
+          currentTrack = self.getTrack();
           if (
             currentTrack.ab
             && (
               (
-                $this.state.repeat
-                && $this.state.single
+                self.state.repeat
+                && self.state.single
               )
               || (
-                $this.state.minPlaytime
-                && player.playtime < $this.state.minPlaytime
+                self.state.minPlaytime
+                && player.playtime < self.state.minPlaytime
               )
-              || $this.state.numActiveTracks === 1
+              || self.state.numActiveTracks === 1
             )
           ) {
-            if ($this.state.time >= currentTrack.ab[1]) {
+            if (self.state.time >= currentTrack.ab[1]) {
               player.seek(currentTrack.ab[0]);
             }
           }
+          self.updateTrackProgress();
         }
       });
       player.addEventListener('ended', function() {
@@ -100,14 +102,14 @@ MusiClock.prototype = {
           console.log(player.options.id + ': ' + arguments[0].type);
           // FIXME: 'ended' should not affect `state.paused`, fix for
           // 'pause' firing before 'ended'
-          $this.state.paused = false;
-          $this.state.single || $this.nextTrack();
+          self.state.paused = false;
+          self.state.single || self.nextTrack();
         }
       });
       player.addEventListener('volumechange', function() {
         if (isCurrentPlayer(player)
-        && !player.fadeVolumeInterval) {
-          $this.state.volume = player.volume;
+        && null === player.fadeVolumeInterval) {
+          self.update({volume: player.volume}, true);
         }
       });
     };
@@ -143,15 +145,15 @@ MusiClock.prototype = {
     return false;
   },
   startTrackingState: function() {
-    var $this = this;
+    var self = this;
     this.stateInterval = setInterval(function() {
-      $this.saveState();
+      self.saveState();
     }, 1000);
   },
   stopTrackingState: function() {
     clearInterval(this.stateInterval);
   },
-  update: function(parameters) {
+  update: function(parameters, stateOnly) {
     var filters, drawRequired, key, drawWorthy = ["playlist"],
       currentPlayer, trackLabels, track, list, diff;
     if (!this.state) {
@@ -256,11 +258,18 @@ MusiClock.prototype = {
       currentPlayer = this.players[this.currentPlayerType][this.currentPlayerIndex];
       currentPlayer.show();
       currentPlayer.load(track.src);
-      currentPlayer.setVolume(this.state.volume);
       this.toggleRepeat(this.state.repeat);
       this.toggleSingle(this.state.single);
       this.toggleShuffle(this.state.shuffle);
     }
+    if (stateOnly !== true && "volume" in parameters) {
+      currentPlayer.setVolume(this.state.volume);
+    }
+    if (stateOnly !== true && "muted" in parameters) {
+      console.log(this.state.muted);
+      currentPlayer.setMute(this.state.muted);
+    }
+    console.log(this.state.volume);
   },
   markupControls: function() {
     var playlistSelector = document.getElementById('playlists');
@@ -271,46 +280,46 @@ MusiClock.prototype = {
     playlistSelector.innerHTML = markup;
   },
   attachHandlers: function() {
-    var $this = this;
+    var self = this;
     window.onYouTubePlayerReady = function(playerId) {
-      for (var i = 0; i < $this.players.youtube.length; i++) {
-        if ($this.players.youtube[i].options.id == playerId)
-          $this.players.youtube[i].setElement(document.getElementById(playerId));
+      for (var i = 0; i < self.players.youtube.length; i++) {
+        if (self.players.youtube[i].options.id == playerId)
+          self.players.youtube[i].setElement(document.getElementById(playerId));
       }
     };
     document.getElementById('playlists').onchange = function() {
-      $this.update({playlist: this.selectedOptions[0].value});
+      self.update({playlist: this.selectedOptions[0].value});
     }
     document.body.onkeydown = function(event) {
       if (/input/i.test(event.target.tagName) || event.altKey || event.ctrlKey || event.metaKey) {
         return true; // allow form input and browser shortcuts
       }
       switch(event.keyCode) {
-        case 32  : $this.togglePause();        break; /* SPACEBAR */
-        case 37  : $this.seekRelative(-10);    break; /* LEFT */
-        case 38  : $this.upVolume();           break; /* UP */
-        case 39  : $this.seekRelative(10);     break; /* RIGHT */
-        case 40  : $this.downVolume();         break; /* DOWN */
-        case 48  : $this.seekPortion(0);       break; /* 0 */
-        case 49  : $this.seekPortion(0.1);     break; /* 1 */
-        case 50  : $this.seekPortion(0.2);     break; /* 2 */
-        case 51  : $this.seekPortion(0.3);     break; /* 3 */
-        case 52  : $this.seekPortion(0.4);     break; /* 4 */
-        case 53  : $this.seekPortion(0.5);     break; /* 5 */
-        case 54  : $this.seekPortion(0.6);     break; /* 6 */
-        case 55  : $this.seekPortion(0.7);     break; /* 7 */
-        case 56  : $this.seekPortion(0.8);     break; /* 8 */
-        case 57  : $this.seekPortion(0.9);     break; /* 9 */
-        case 72  : $this.prevTrack();          break; /* h */
-        case 74  : $this.nextPlaylist();       break; /* j */
-        case 75  : $this.prevPlaylist();       break; /* k */
-        case 76  : $this.nextTrack();          break; /* l */
-        case 77  : $this.toggleMute();         break; /* m */
-        case 82  : $this.toggleRepeat();       break; /* r */
-        case 83  : $this.toggleSingle();       break; /* s */
-     // case ??  : $this.toggleSShuffle();     break; /* ? */
-        case 187 : $this.upVolume();           break; /* = */
-        case 189 : $this.downVolume();         break; /* - */
+        case 32  : self.togglePause();        break; /* SPACEBAR */
+        case 37  : self.seekRelative(-10);    break; /* LEFT */
+        case 38  : self.upVolume();           break; /* UP */
+        case 39  : self.seekRelative(10);     break; /* RIGHT */
+        case 40  : self.downVolume();         break; /* DOWN */
+        case 48  : self.seekPortion(0);       break; /* 0 */
+        case 49  : self.seekPortion(0.1);     break; /* 1 */
+        case 50  : self.seekPortion(0.2);     break; /* 2 */
+        case 51  : self.seekPortion(0.3);     break; /* 3 */
+        case 52  : self.seekPortion(0.4);     break; /* 4 */
+        case 53  : self.seekPortion(0.5);     break; /* 5 */
+        case 54  : self.seekPortion(0.6);     break; /* 6 */
+        case 55  : self.seekPortion(0.7);     break; /* 7 */
+        case 56  : self.seekPortion(0.8);     break; /* 8 */
+        case 57  : self.seekPortion(0.9);     break; /* 9 */
+        case 72  : self.prevTrack();          break; /* h */
+        case 74  : self.nextPlaylist();       break; /* j */
+        case 75  : self.prevPlaylist();       break; /* k */
+        case 76  : self.nextTrack();          break; /* l */
+        case 77  : self.toggleMute();         break; /* m */
+        case 82  : self.toggleRepeat();       break; /* r */
+        case 83  : self.toggleSingle();       break; /* s */
+     // case ??  : self.toggleSShuffle();     break; /* ? */
+        case 187 : self.upVolume();           break; /* = */
+        case 189 : self.downVolume();         break; /* - */
         default  : return true;
       }
       event.preventDefault();
@@ -370,22 +379,23 @@ MusiClock.prototype = {
     return states;
   },
   tickClock: function() {
-    var $this, now, states, nextHour, nextTime, wait;
+    var self, now, states, nextHour, nextTime, wait;
 
-    $this = this;
+    self = this;
     now = new Date()
     clearTimeout(this.timeout);
 
     this.update({trackStates: this.getTrackStates()});
 
     this.timeout = setTimeout(function() {
-      $this.tickClock();
+      self.tickClock();
     }, 10000);
   },
   markupPlaylist: function() {
-    var $this, playlist, markup, trackClasses, track, title, list, tracks, setupTrack;
+    var self, playlist, markup, trackClasses, track, progress, state, title,
+      list, tracks, setupTrack;
 
-    $this = this;
+    self = this;
     playlist = this.data.playlists[this.state.playlist];
     markup = '<h2>' + this.state.playlist + '</h2>';
     for (var i = 0; i < playlist.tracks.length; i++) {
@@ -394,20 +404,43 @@ MusiClock.prototype = {
       if (i == this.state.track) trackClasses.push("current");
 
       track = this.getTrack(this.state.playlist, i);
-      title = track.title || track.src;
-      markup += '<div class="' + trackClasses.join(" ") + '">' + title + '</div>';
+      progress = '<div class="progress"></div>';
+      state = '<span class="state"></span>';
+      title = '<h3>' + state + track.title || track.src + '</h3>';
+      markup += '<article class="' + trackClasses.join(" ") + '">'
+        + progress
+        + title
+      + '</article>';
     }
-    list = document.getElementById('list');
+    list = document.getElementById('playlist');
     list.innerHTML = markup;
     tracks = document.getElementsByClassName('track');
         setupTrack = function(i) {
       tracks[i].onclick = function() {
-        $this.update({track:i});
+        self.update({track:i});
       };
     };
     for (i = 0; i < tracks.length; i++) {
       setupTrack(i);
     }
+  },
+  updateTrackProgress: function() {
+    var track, currentPlayer, loopCount, loopDuration, tailDuration, trackElement, progressBar, totalPlaytime, progress;
+    track = this.getTrack(this.state.playlist, this.state.track);
+    trackElement = document.querySelector('.track.current');
+    progressBar = trackElement.querySelector('.progress');
+    currentPlayer = this.getCurrentPlayer();
+    trackDuration = currentPlayer.duration
+
+    totalPlaytime = trackDuration;
+    if (this.state.minPlaytime > totalPlaytime && track.ab) {
+      tailDuration = trackDuration - track.ab[1];
+      loopDuration = track.ab[1] - track.ab[0];
+      loopCount = Math.ceil((this.state.minPlaytime - trackDuration) / loopDuration);
+      totalPlaytime = trackDuration + loopCount * loopDuration
+    }
+    progress = this.state.time / totalPlaytime;
+    progressBar.style.width = (progress * 100) + '%';
   },
   getFirstPlaylist: function() {
     for (var playlist in this.data.playlists) { return playlist; }
@@ -505,6 +538,7 @@ MusiClock.prototype = {
   togglePause: function() {
     var player = this.getCurrentPlayer();
     player.paused ? player.play() : player.pause();
+    this.controls.playPause
   },
   toggleRepeat: function(repeat) {
     if (typeof repeat !== "undefined")
@@ -551,7 +585,7 @@ MusiClock.prototype = {
     }
   },
   setMinPlaytime: function(value, update) {
-    this.state.minPlaytime = Number(value);
+    this.update({"minPlaytime": Number(value)});
     if (this.controls.minPlaytimeValue) {
       this.controls.minPlaytimeValue.innerHTML = formatSeconds(value);
       if (update !== false) {
@@ -560,12 +594,7 @@ MusiClock.prototype = {
     }
   },
   setVolume: function(volume, noState) {
-    if (typeof volume === "undefined" || isNaN(volume))
-      volume = this.state.volume;
-    else if (!noState)
-      this.state.volume = volume;
-
-    this.getCurrentPlayer().setVolume(volume);
+    this.update({volume: volume});
   },
   upVolume: function() {
     this.setVolume(Math.min(1, this.state.volume + 0.1));
@@ -574,40 +603,82 @@ MusiClock.prototype = {
     this.setVolume(Math.max(0, this.state.volume - 0.1));
   },
   toggleMute: function() {
-    // FIXME: set volume on the player, without triggering a "volumechange"
-    // event
+    this.update({muted:!this.state.muted});
   },
   /*
    * add listeners on control element's children, by class
    * called externally
    */
   setListControls: function(element) {
-    var $this = this;
+    var self = this;
     this.controls = {};
-    this.controls.prev = element.getElementsByClassName('prev')[0];
-    if (this.controls.prev) this.controls.prev.onclick = function() { $this.prevTrack(); };
+    this.controls.playPause = element.querySelector('[rel=play-pause]');
+    if (this.controls.playPause) {
+      this.controls.playPause.onclick = function() {
+        self.togglePause();
+        self.updateControlState(this, self.state.paused ? 'play' : 'pause');
+      };
+      this.updateControlState(this.controls.playPause, self.state.paused ? 'play' : 'pause');
+    }
 
-    this.controls.next = element.getElementsByClassName('next')[0];
-    if (this.controls.next) this.controls.next.onclick = function() { $this.nextTrack(); };
+    this.controls.prev = element.querySelector('[rel=prev]');
+    if (this.controls.prev) this.controls.prev.onclick = function() { self.prevTrack(); };
 
-    this.controls.repeat = element.getElementsByClassName('repeat')[0];
-    if (this.controls.repeat) this.controls.repeat.onclick = function() { $this.toggleRepeat(); };
+    this.controls.next = element.querySelector('[rel=next]');
+    if (this.controls.next) this.controls.next.onclick = function() { self.nextTrack(); };
+
+    this.controls.repeat = element.querySelector('[rel=repeat]');
+    if (this.controls.repeat) this.controls.repeat.onclick = function() { self.toggleRepeat(); };
     this.toggleRepeat(!!this.state.repeat);
 
-    this.controls.single = element.getElementsByClassName('single')[0];
-    if (this.controls.single) this.controls.single.onclick = function() { $this.toggleSingle(); };
+    this.controls.single = element.querySelector('[rel=single]');
+    if (this.controls.single) this.controls.single.onclick = function() { self.toggleSingle(); };
     this.toggleSingle(!!this.state.single);
 
-    this.controls.shuffle = element.getElementsByClassName('shuffle')[0];
-    if (this.controls.shuffle) this.controls.shuffle.onclick = function() { $this.toggleShuffle(); };
+    this.controls.shuffle = element.querySelector('[rel=shuffle]');
+    if (this.controls.shuffle) {
+      this.controls.shuffle.onclick = function() {
+        self.toggleShuffle();
+        self.updateControlState(this, self.state.shuffle);
+      };
+      this.updateControlState(this.controls.shuffle, this.state.shuffle);
+    }
     this.toggleShuffle(!!this.state.shuffle);
 
-    this.controls.minPlaytime = element.getElementsByClassName('minPlaytime')[0];
-    this.controls.minPlaytimeValue = element.getElementsByClassName('minPlaytime-value')[0];
+    this.controls.volume = element.querySelector('[rel=volume]');
+    if (this.controls.volume) this.controls.volume.onclick = function() {
+      self.toggleMute();
+      self.updateControlState(self.controls.volume, self.state.muted ? 'mute' : 'high');
+    };
+    this.updateControlState(this.controls.volume, this.state.muted ? 'mute' : 'high');
+    this.toggleMute(!!this.state.muted);
+
+    this.controls.minPlaytime = element.querySelector('input[rel=min-playtime]');
+    this.controls.minPlaytimeValue = element.querySelector('label[rel=min-playtime] .value');
     if (this.controls.minPlaytime) {
-      this.controls.minPlaytime.onchange = function() { $this.setMinPlaytime(getRangeLog(this, 4), false); };
+      this.controls.minPlaytime.onchange = function() { self.setMinPlaytime(getRangeLog(this, 4), false); };
     }
     this.setMinPlaytime(this.state.minPlaytime);
+  },
+  updateControlState: function(element, newState) {
+    var statesRaw, states, i, len, pair, state;
+    if (!element.hasAttribute('data-states')) {
+      toggleClass(element, 'inactive', !newState);
+    } else if (!element.hasOwnProperty('states')) {
+      statesRaw = element.getAttribute('data-states');
+      if (statesRaw) {
+        statesRaw = statesRaw.split(',');
+        states = {};
+        for (i=0, len=statesRaw.length; i < len; i++) {
+          pair = statesRaw[i].split(':');
+          states[pair[0]] = pair[1];
+        }
+        element.states = states;
+      }
+    }
+    for (state in element.states) {
+      toggleClass(element, element.states[state], state == newState);
+    }
   },
   getPlayingAudio: function() {
         var players;
