@@ -74,7 +74,8 @@ class YTPlayer extends Player
         params
         atts
       )
-      undefined
+
+    @playtime = 0
 
     # FIXME: carry MusiClock.state.time into startSeconds
 

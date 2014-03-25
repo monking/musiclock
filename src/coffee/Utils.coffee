@@ -46,7 +46,8 @@ window.formatSeconds = (seconds) ->
   else
     value = Math.floor seconds / 86400
     unit = 'day'
-  return "#{value} #{unit}#{'s' if /[A-z]$/.test(unit) and value != 1}"
+  plural = if /[A-z]$/.test(unit) and value != 1 then 's' else ''
+  return "#{value} #{unit}#{plural}"
 
 window.getRangeLog = (element, pow) ->
   # assumes min is zero
@@ -57,3 +58,8 @@ window.setRangeLog = (element, value, pow) ->
   # assumes min is zero
   pow ?= 2
   element.value = Math.pow(value * Math.pow(element.attributes.max.value, pow - 1), 1 / pow)
+
+window.circular = (value, high, low = 0) ->
+  adjusted = (value - low) % (high - low + 1) # low <=> high, inclusive
+  adjusted += high - low if adjusted < 0
+  return adjusted + low

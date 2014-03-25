@@ -102,23 +102,13 @@ MusiClock = (function() {
         }
         return self.updateTrackProgress();
       });
-      player.addEventListener('ended', function() {
+      return player.addEventListener('ended', function() {
         if (!isCurrentPlayer(player)) {
           return;
         }
         self.state.paused = false;
         if (!self.state.single) {
           return self.nextTrack();
-        }
-      });
-      return player.addEventListener('volumechange', function() {
-        if (!isCurrentPlayer(player)) {
-          return;
-        }
-        if (player.fadeVolumeInterval === null) {
-          return self.update({
-            volume: player.volume
-          }, true);
         }
       });
     };
@@ -251,7 +241,7 @@ MusiClock = (function() {
       this.markupPlaylist();
     }
     if (drawRequired || "track" in parameters) {
-      track = this.getTrack();
+      track = this.getTrack(parameters.playlist, parameters.track);
       this.currentPlayerType = track.src && !/\.(ogg|wav|m4a|mp3)$/.test(track.src) ? 'youtube' : 'html';
       currentPlayer.hide();
       this.currentPlayerIndex = 1 - this.currentPlayerIndex;
@@ -535,37 +525,24 @@ MusiClock = (function() {
   };
 
   MusiClock.prototype.getFirstActiveTrackIndex = function(checkFrom, direction, trackStates) {
-    var checkfromIndex, firstMatch, fromIndex, i, nextMatch, toIndex, _ref;
-    checkfromIndex = 0;
-    if (direction == null) {
-      direction = 1;
-    }
+    var checkfrom, first, i;
+    checkfrom = this.realTrackIndex(checkFrom);
+    direction = direction ? Math.round(direction) : 1;
     if (trackStates == null) {
       trackStates = this.state.trackStates;
     }
-    fromIndex = direction > 0 ? 0 : trackStates.length - 1;
-    toIndex = direction <= 0 ? -1 : trackStates.length;
-    i = fromIndex;
-    while (i !== toIndex) {
-      if (!trackStates[i]) {
-        continue;
+    if (trackStates) {
+      first = true;
+      i = checkFrom;
+      while (first || (!isNaN(i) && i !== checkFrom)) {
+        first = false;
+        if (trackStates[i]) {
+          return i;
+        }
+        i = this.realTrackIndex(i + direction);
       }
-      if (typeof firstMatch === 'undefined') {
-        firstMatch = i;
-      }
-      if (typeof nextMatch === 'undefined' && ((_ref = direction > 0) != null ? _ref : i >= {
-        checkfromIndex: i <= checkfromIndex
-      })) {
-        nextMatch = i;
-        break;
-      }
-      i += direction;
     }
-    if (typeof nextMatch !== 'undefined') {
-      return nextMatch;
-    } else {
-      return firstMatch;
-    }
+    return NaN;
   };
 
   MusiClock.prototype.prevPlaylist = function() {
@@ -604,6 +581,14 @@ MusiClock = (function() {
   };
 
   MusiClock.prototype.selectPlaylist = function() {};
+
+  MusiClock.prototype.realTrackIndex = function(index) {
+    if (this.state.trackStates) {
+      return circular(index, this.state.trackStates.length);
+    } else {
+      return index;
+    }
+  };
 
   MusiClock.prototype.prevTrack = function() {
     return this.update({

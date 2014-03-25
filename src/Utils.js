@@ -55,7 +55,7 @@ toggleClass = function(element, className, override) {
 };
 
 window.formatSeconds = function(seconds) {
-  var unit, value;
+  var plural, unit, value;
   value = 0;
   unit = '';
   if (seconds < 60) {
@@ -71,7 +71,8 @@ window.formatSeconds = function(seconds) {
     value = Math.floor(seconds / 86400);
     unit = 'day';
   }
-  return "" + value + " " + unit + (/[A-z]$/.test(unit) && value !== 1 ? 's' : void 0);
+  plural = /[A-z]$/.test(unit) && value !== 1 ? 's' : '';
+  return "" + value + " " + unit + plural;
 };
 
 window.getRangeLog = function(element, pow) {
@@ -86,4 +87,16 @@ window.setRangeLog = function(element, value, pow) {
     pow = 2;
   }
   return element.value = Math.pow(value * Math.pow(element.attributes.max.value, pow - 1), 1 / pow);
+};
+
+window.circular = function(value, high, low) {
+  var adjusted;
+  if (low == null) {
+    low = 0;
+  }
+  adjusted = (value - low) % (high - low + 1);
+  if (adjusted < 0) {
+    adjusted += high - low;
+  }
+  return adjusted + low;
 };

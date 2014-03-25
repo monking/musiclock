@@ -100,12 +100,6 @@ class MusiClock
         self.state.paused = false
         self.nextTrack() if not self.state.single
 
-      player.addEventListener 'volumechange', ->
-        return if not isCurrentPlayer player
-
-        if player.fadeVolumeInterval is null
-          self.update {volume: player.volume}, true
-
     for type of @players
       connectPlayer(type, i) for player, i in @players[type]
 
@@ -212,7 +206,7 @@ class MusiClock
     @markupPlaylist() if drawRequired
 
     if drawRequired or "track" of parameters
-      track = @getTrack()
+      track = @getTrack parameters.playlist, parameters.track
 
       @currentPlayerType = if track.src and not /\.(ogg|wav|m4a|mp3)$/.test track.src then 'youtube' else 'html'
       currentPlayer.hide()
@@ -392,25 +386,19 @@ class MusiClock
     @data.library[@data.playlists[playlist].tracks[index].id]
 
   getFirstActiveTrackIndex: (checkFrom, direction, trackStates) -> #FIXME: this method is a MESS!
-    checkfromIndex  = 0
-    direction      ?= 1
-    trackStates    ?= @state.trackStates
+    checkfrom   = @realTrackIndex checkFrom
+    direction   = if direction then Math.round direction else 1
+    trackStates ?= @state.trackStates
 
-    fromIndex = if direction > 0  then 0  else trackStates.length - 1
-    toIndex   = if direction <= 0 then -1 else trackStates.length
+    if trackStates
+      first = true
+      i = checkFrom
+      while first or (!isNaN(i) and i isnt checkFrom)
+        first = false
+        return i if trackStates[i]
+        i = @realTrackIndex i + direction
 
-    i = fromIndex
-    while i isnt toIndex
-      continue if not trackStates[i]
-
-      firstMatch = i if typeof firstMatch is 'undefined'
-      if typeof nextMatch is 'undefined' and (direction > 0 ? i >= checkfromIndex : i <= checkfromIndex)
-        nextMatch = i
-        break
-
-      i += direction
-
-    if typeof nextMatch isnt 'undefined' then nextMatch else firstMatch
+    return NaN
 
   prevPlaylist: ->
     for playlistName of @data.playlists
@@ -437,6 +425,9 @@ class MusiClock
   selectPlaylist: ->
     # STUB: cannot open playlist selector as long as it is an OS select
     # element
+
+  realTrackIndex: (index) ->
+    return if @state.trackStates then circular index, @state.trackStates.length else index
 
   prevTrack: ->
     # FIXME: if shuffling, get last played, not previous in playlist
