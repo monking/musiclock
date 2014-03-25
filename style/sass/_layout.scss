@@ -139,6 +139,7 @@ article.track {
   }
 
   .progress-bar {
+    display: none;
     width: 0%;
     height: 100%;
     background-color: $accent;
@@ -149,6 +150,7 @@ article.track {
   }
 
   .current-time-bar {
+    display: none;
     width: 0%;
     height: 6px;
     background-color: $accent;
@@ -175,10 +177,15 @@ article.track {
     color: darken($accent, 20%);
   }
 
-  &.current .state:before {
-    content: "\f04c";
-    /* pause */
-    color: #000;
+  &.current {
+    .progress-bar, .current-time-bar {
+      display: block;
+    }
+    .state:before {
+      content: "\f04c";
+      /* pause */
+      color: #000;
+    }
   }
 
 }

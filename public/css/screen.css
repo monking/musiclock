@@ -119,6 +119,7 @@ article.track .source {
   line-height: 40px;
 }
 article.track .progress-bar {
+  display: none;
   width: 0%;
   height: 100%;
   background-color: #ffb2a4;
@@ -128,6 +129,7 @@ article.track .progress-bar {
   z-index: -1;
 }
 article.track .current-time-bar {
+  display: none;
   width: 0%;
   height: 6px;
   background-color: #ffb2a4;
@@ -148,6 +150,9 @@ article.track .state:before {
 }
 article.track:hover .state:before, article.track.current:hover .state:before {
   color: #ff5c3e;
+}
+article.track.current .progress-bar, article.track.current .current-time-bar {
+  display: block;
 }
 article.track.current .state:before {
   content: "\f04c";
