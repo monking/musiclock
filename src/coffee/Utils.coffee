@@ -31,23 +31,53 @@ toggleClass = (element, className, override) ->
     element.className = classes.join ' '
   return added
 
+if typeof window.Time is 'undefined'
+  window.Time = (input) ->
+    units =
+      second:
+        symbol: 's'
+        pattern: /([0-9.]+) ?s(ec(ond)?(s)?)?\.?/
+        ratio: 1
+      minute:
+        symbol: 'min'
+        pattern: /([0-9.]+) ?m(in(ute)?(s)?)?\.?/
+        ratio: 60
+      hour:
+        symbol: 'h'
+        pattern: /([0-9.]+) ?h(r|our)?(s)?\.?/
+        ratio: 3600
+      day:
+        symbol: 'd'
+        pattern: /([0-9.]+) ?d(ay)?(s)?\.?/
+        ratio: 86400
+
+    value = Number input
+    if isNaN value
+      for name, unit of units
+        match = input.match unit.pattern
+        if match
+          value = match[1]
+          break
+    else
+      unit = units.second
+
+    result = new Number(value * unit.ratio)
+
+    if not isNaN value
+      maxUnit = units.second
+      for name, unit of units
+        if result >= unit.ratio
+          maxUnit = unit
+      precision = if maxUnit.ratio > 1 then 10 else 1
+      value = Math.round(value / maxUnit.ratio * precision) / precision
+      string = "#{value}#{maxUnit.symbol}"
+    else
+      string = ''
+    result.toString = -> string
+    result
+
 window.formatSeconds = (seconds) ->
-  value = 0
-  unit = ''
-  if seconds < 60
-    value = Math.floor seconds
-    unit = 'sec.'
-  else if seconds < 3600
-    value = Math.floor seconds / 60
-    unit = 'min.'
-  else if seconds < 86400
-    value = Math.floor seconds / 3600
-    unit = 'hr.'
-  else
-    value = Math.floor seconds / 86400
-    unit = 'day'
-  plural = if /[A-z]$/.test(unit) and value != 1 then 's' else ''
-  return "#{value} #{unit}#{plural}"
+  (new Time seconds).toString()
 
 window.getRangeLog = (element, pow) ->
   # assumes min is zero

@@ -54,25 +54,68 @@ toggleClass = function(element, className, override) {
   return added;
 };
 
+if (typeof window.Time === 'undefined') {
+  window.Time = function(input) {
+    var match, maxUnit, name, precision, result, string, unit, units, value;
+    units = {
+      second: {
+        symbol: 's',
+        pattern: /([0-9.]+) ?s(ec(ond)?(s)?)?\.?/,
+        ratio: 1
+      },
+      minute: {
+        symbol: 'min',
+        pattern: /([0-9.]+) ?m(in(ute)?(s)?)?\.?/,
+        ratio: 60
+      },
+      hour: {
+        symbol: 'h',
+        pattern: /([0-9.]+) ?h(r|our)?(s)?\.?/,
+        ratio: 3600
+      },
+      day: {
+        symbol: 'd',
+        pattern: /([0-9.]+) ?d(ay)?(s)?\.?/,
+        ratio: 86400
+      }
+    };
+    value = Number(input);
+    if (isNaN(value)) {
+      for (name in units) {
+        unit = units[name];
+        match = input.match(unit.pattern);
+        if (match) {
+          value = match[1];
+          break;
+        }
+      }
+    } else {
+      unit = units.second;
+    }
+    result = new Number(value * unit.ratio);
+    if (!isNaN(value)) {
+      maxUnit = units.second;
+      for (name in units) {
+        unit = units[name];
+        if (result >= unit.ratio) {
+          maxUnit = unit;
+        }
+      }
+      precision = maxUnit.ratio > 1 ? 10 : 1;
+      value = Math.round(value / maxUnit.ratio * precision) / precision;
+      string = "" + value + maxUnit.symbol;
+    } else {
+      string = '';
+    }
+    result.toString = function() {
+      return string;
+    };
+    return result;
+  };
+}
+
 window.formatSeconds = function(seconds) {
-  var plural, unit, value;
-  value = 0;
-  unit = '';
-  if (seconds < 60) {
-    value = Math.floor(seconds);
-    unit = 'sec.';
-  } else if (seconds < 3600) {
-    value = Math.floor(seconds / 60);
-    unit = 'min.';
-  } else if (seconds < 86400) {
-    value = Math.floor(seconds / 3600);
-    unit = 'hr.';
-  } else {
-    value = Math.floor(seconds / 86400);
-    unit = 'day';
-  }
-  plural = /[A-z]$/.test(unit) && value !== 1 ? 's' : '';
-  return "" + value + " " + unit + plural;
+  return (new Time(seconds)).toString();
 };
 
 window.getRangeLog = function(element, pow) {
