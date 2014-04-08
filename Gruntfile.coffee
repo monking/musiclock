@@ -48,3 +48,4 @@ module.exports = (grunt) ->
         tasks: ['compass']
 
   grunt.registerTask 'default', ['compass', 'coffee', 'concat', 'watch']
+  grunt.registerTask 'compile', ['compass', 'coffee', 'concat']

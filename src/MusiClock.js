@@ -296,18 +296,22 @@ MusiClock = (function() {
       if (event.altKey || event.ctrlKey || event.metaKey || /input/i.test(event.target.tagName)) {
         return true;
       }
+      console.log(event.keyCode);
       switch (event.keyCode) {
+        case event.shiftKey && 76:
+          self.testLoop();
+          break;
         case 32:
           self.togglePause();
           break;
         case 37:
-          self.seekRelative(-10);
+          self.seek('-10');
           break;
         case 38:
           self.upVolume();
           break;
         case 39:
-          self.seekRelative(10);
+          self.seek('10');
           break;
         case 40:
           self.downVolume();
@@ -625,23 +629,32 @@ MusiClock = (function() {
     });
   };
 
-  MusiClock.prototype.seekPortion = function(portion) {
+  MusiClock.prototype.testLoop = function(leadTime) {
+    var track;
+    if (leadTime == null) {
+      leadTime = 2;
+    }
+    track = this.getTrack();
+    if (track.ab) {
+      return this.seek(track.ab[1] - leadTime);
+    }
+  };
+
+  MusiClock.prototype.seek = function(time) {
     var player;
     if (!(player = this.getCurrentPlayer())) {
       return;
     }
-    return player.seek(player.duration * portion);
+    if (typeof time === 'string') {
+      time = player.currentTime + Number(time);
+    }
+    time = Math.max(time, 0);
+    time = Math.min(time, player.duration);
+    return player.seek(time);
   };
 
-  MusiClock.prototype.seekRelative = function(offset) {
-    var player, seekTo;
-    if (!(player = this.getCurrentPlayer())) {
-      return;
-    }
-    seekTo = player.currentTime + offset;
-    seekTo = Math.max(seekTo, 0);
-    seekTo = Math.min(seekTo, player.duration);
-    return player.seek(seekTo);
+  MusiClock.prototype.seekPortion = function(portion) {
+    return this.seek(player.duration * portion);
   };
 
   MusiClock.prototype.togglePause = function() {

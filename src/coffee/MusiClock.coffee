@@ -244,32 +244,34 @@ class MusiClock
       if event.altKey or event.ctrlKey or event.metaKey or /input/i.test event.target.tagName
         return true; # allow form input and browser shortcuts
 
+      console.log event.keyCode
+
       switch event.keyCode
-        when 32  then self.togglePause();     # SPACEBAR
-        when 37  then self.seekRelative(-10); # LEFT
-        when 38  then self.upVolume();        # UP
-        when 39  then self.seekRelative(10);  # RIGHT
-        when 40  then self.downVolume();      # DOWN
-        when 48  then self.seekPortion(0);    # 0
-        when 49  then self.seekPortion(0.1);  # 1
-        when 50  then self.seekPortion(0.2);  # 2
-        when 51  then self.seekPortion(0.3);  # 3
-        when 52  then self.seekPortion(0.4);  # 4
-        when 53  then self.seekPortion(0.5);  # 5
-        when 54  then self.seekPortion(0.6);  # 6
-        when 55  then self.seekPortion(0.7);  # 7
-        when 56  then self.seekPortion(0.8);  # 8
-        when 57  then self.seekPortion(0.9);  # 9
-        when 72  then self.prevTrack();       # h
-        when 74  then self.nextPlaylist();    # j
-        when 75  then self.prevPlaylist();    # k
-        when 76  then self.nextTrack();       # l
-        when 77  then self.toggleMute();      # m
-        when 82  then self.toggleRepeat();    # r
-        when 83  then self.toggleSingle();    # s
-      # when ??  then self.toggleSShuffle();  # ?
-        when 187 then self.upVolume();        # =
-        when 189 then self.downVolume();      # -
+        when event.shiftKey && 76 then self.testLoop()      # L
+        when 32                   then self.togglePause()   # SPACEBAR
+        when 37                   then self.seek '-10'      # LEFT
+        when 38                   then self.upVolume()      # UP
+        when 39                   then self.seek '10'       # RIGHT
+        when 40                   then self.downVolume()    # DOWN
+        when 48                   then self.seekPortion 0   # 0
+        when 49                   then self.seekPortion 0.1 # 1
+        when 50                   then self.seekPortion 0.2 # 2
+        when 51                   then self.seekPortion 0.3 # 3
+        when 52                   then self.seekPortion 0.4 # 4
+        when 53                   then self.seekPortion 0.5 # 5
+        when 54                   then self.seekPortion 0.6 # 6
+        when 55                   then self.seekPortion 0.7 # 7
+        when 56                   then self.seekPortion 0.8 # 8
+        when 57                   then self.seekPortion 0.9 # 9
+        when 72                   then self.prevTrack()     # h
+        when 74                   then self.nextPlaylist()  # j
+        when 75                   then self.prevPlaylist()  # k
+        when 76                   then self.nextTrack()     # l
+        when 77                   then self.toggleMute()    # m
+        when 82                   then self.toggleRepeat()  # r
+        when 83                   then self.toggleSingle()  # s
+        when 187                  then self.upVolume()      # =
+        when 189                  then self.downVolume()    # -
         else return true
 
       event.preventDefault()
@@ -449,18 +451,24 @@ class MusiClock
     @update
       track: trackIndex
 
+  testLoop: (leadTime = 2) ->
+    track = @getTrack()
+    if track.ab
+      @seek track.ab[1] - leadTime
+
+  seek: (time) ->
+    return if not player = @getCurrentPlayer()
+
+    if typeof time is 'string'
+      time = player.currentTime + Number(time)
+
+    time = Math.max time, 0
+    time = Math.min time, player.duration
+
+    player.seek time
+
   seekPortion: (portion) ->
-    return if not player = @getCurrentPlayer()
-
-    player.seek player.duration * portion
-
-  seekRelative: (offset) ->
-    return if not player = @getCurrentPlayer()
-
-    seekTo = player.currentTime + offset
-    seekTo = Math.max seekTo, 0
-    seekTo = Math.min seekTo, player.duration
-    player.seek seekTo
+    @seek player.duration * portion
 
   togglePause: ->
     return if not player = @getCurrentPlayer()
