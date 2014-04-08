@@ -575,6 +575,7 @@ MusiClock = (function() {
         single: false,
         shuffle: false,
         repeat: false,
+        softSkip: false,
         minPlaytime: 100
       });
     }
@@ -641,7 +642,7 @@ MusiClock = (function() {
         }
         self.state.time = player.currentTime;
         currentTrack = self.getTrack();
-        if (currentTrack.ab && ((self.state.repeat && self.state.single) || (self.state.minPlaytime && player.playtime < self.state.minPlaytime) || self.state.numActiveTracks === 1) && self.state.time >= currentTrack.ab[1]) {
+        if (currentTrack.ab && !self.state.softSkip && ((self.state.repeat && self.state.single) || (self.state.minPlaytime && player.playtime < self.state.minPlaytime) || self.state.numActiveTracks === 1) && self.state.time >= currentTrack.ab[1]) {
           player.seek(currentTrack.ab[0]);
         }
         return self.updateTrackProgress();
@@ -743,6 +744,7 @@ MusiClock = (function() {
     }
     if (typeof parameters.track !== 'undefined') {
       playlist = parameters.playlist || this.state.playlist;
+      parameters.softSkip = false;
       if (typeof this.data.playlists[playlist].tracks[parameters.track] === 'undefined') {
         newTrackStates = this.getTrackStates(playlist);
         parameters.track = this.getFirstActiveTrackIndex(parameters.track, 1, newTrackStates);
@@ -840,10 +842,12 @@ MusiClock = (function() {
       if (event.altKey || event.ctrlKey || event.metaKey || /input/i.test(event.target.tagName)) {
         return true;
       }
-      console.log(event.keyCode);
       switch (event.keyCode) {
-        case event.shiftKey && 76:
+        case event.shiftKey && 72:
           self.testLoop();
+          break;
+        case event.shiftKey && 76:
+          self.softSkip();
           break;
         case 32:
           self.togglePause();
@@ -1173,6 +1177,10 @@ MusiClock = (function() {
     });
   };
 
+  MusiClock.prototype.softSkip = function() {
+    return this.state.softSkip = true;
+  };
+
   MusiClock.prototype.testLoop = function(leadTime) {
     var track;
     if (leadTime == null) {
@@ -1290,6 +1298,12 @@ MusiClock = (function() {
     if (this.controls.next) {
       this.controls.next.onclick = function() {
         return self.nextTrack();
+      };
+    }
+    this.controls.softSkip = element.querySelector('[rel=soft-skip]');
+    if (this.controls.softSkip) {
+      this.controls.softSkip.onclick = function() {
+        return self.softSkip();
       };
     }
     this.controls.repeat = element.querySelector('[rel=repeat]');

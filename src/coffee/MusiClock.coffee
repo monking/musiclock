@@ -27,6 +27,7 @@ class MusiClock
         single          : false
         shuffle         : false
         repeat          : false
+        softSkip        : false
         minPlaytime     : 100
 
     if options.controls
@@ -84,7 +85,7 @@ class MusiClock
 
         self.state.time = player.currentTime
         currentTrack = self.getTrack()
-        if currentTrack.ab and (
+        if currentTrack.ab and not self.state.softSkip and (
           (self.state.repeat and self.state.single) or
           (self.state.minPlaytime and player.playtime < self.state.minPlaytime) or
           self.state.numActiveTracks is 1
@@ -173,6 +174,7 @@ class MusiClock
 
     if typeof parameters.track isnt 'undefined'
       playlist = parameters.playlist or @state.playlist
+      parameters.softSkip = false
 
       if typeof @data.playlists[playlist].tracks[parameters.track] is 'undefined'
         newTrackStates = @getTrackStates playlist
@@ -244,10 +246,9 @@ class MusiClock
       if event.altKey or event.ctrlKey or event.metaKey or /input/i.test event.target.tagName
         return true; # allow form input and browser shortcuts
 
-      console.log event.keyCode
-
       switch event.keyCode
-        when event.shiftKey && 76 then self.testLoop()      # L
+        when event.shiftKey && 72 then self.testLoop()      # H
+        when event.shiftKey && 76 then self.softSkip()      # L
         when 32                   then self.togglePause()   # SPACEBAR
         when 37                   then self.seek '-10'      # LEFT
         when 38                   then self.upVolume()      # UP
@@ -451,6 +452,9 @@ class MusiClock
     @update
       track: trackIndex
 
+  softSkip: ->
+    @state.softSkip = true
+
   testLoop: (leadTime = 2) ->
     track = @getTrack()
     if track.ab
@@ -538,6 +542,10 @@ class MusiClock
     @controls.next = element.querySelector '[rel=next]'
     if @controls.next
       @controls.next.onclick = -> self.nextTrack()
+
+    @controls.softSkip = element.querySelector '[rel=soft-skip]'
+    if @controls.softSkip
+      @controls.softSkip.onclick = -> self.softSkip()
 
     @controls.repeat = element.querySelector '[rel=repeat]'
     if @controls.repeat
