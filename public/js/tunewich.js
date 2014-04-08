@@ -1206,6 +1206,10 @@ MusiClock = (function() {
   };
 
   MusiClock.prototype.seekPortion = function(portion) {
+    var player;
+    if (!(player = this.getCurrentPlayer())) {
+      return;
+    }
     return this.seek(player.duration * portion);
   };
 

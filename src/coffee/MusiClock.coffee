@@ -472,6 +472,7 @@ class MusiClock
     player.seek time
 
   seekPortion: (portion) ->
+    return if not player = @getCurrentPlayer()
     @seek player.duration * portion
 
   togglePause: ->
