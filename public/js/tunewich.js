@@ -1149,20 +1149,15 @@ MusiClock = (function() {
   };
 
   MusiClock.prototype.nextTrack = function() {
-    var activeTracks, i, state, trackIndex;
+    var activeTracks, i, state, trackIndex, _i, _len, _ref;
     if (this.state.shuffle) {
       activeTracks = [];
-      if ((function() {
-        var _i, _len, _ref, _results;
-        _ref = this.state.trackStates;
-        _results = [];
-        for (i = _i = 0, _len = _ref.length; _i < _len; i = ++_i) {
-          state = _ref[i];
-          _results.push(state && i !== this.state.track);
+      _ref = this.state.trackStates;
+      for (i = _i = 0, _len = _ref.length; _i < _len; i = ++_i) {
+        state = _ref[i];
+        if (state && i !== this.state.track) {
+          activeTracks.push(i);
         }
-        return _results;
-      }).call(this)) {
-        activeTracks.push(i);
       }
       if (activeTracks.length) {
         trackIndex = activeTracks[Math.floor(Math.random() * activeTracks.length)];

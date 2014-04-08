@@ -440,7 +440,8 @@ class MusiClock
   nextTrack: ->
     if @state.shuffle
       activeTracks = []
-      activeTracks.push i if state and i isnt @state.track for state, i in @state.trackStates
+      for state, i in @state.trackStates
+        activeTracks.push i if state and i isnt @state.track
 
       if activeTracks.length
         trackIndex = activeTracks[Math.floor(Math.random() * activeTracks.length)]
