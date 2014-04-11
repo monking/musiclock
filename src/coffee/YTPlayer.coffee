@@ -55,6 +55,7 @@ class YTPlayer extends Player
     @currentTimeInterval = setInterval onTimeChange, @options.updateInterval
 
   load: (src) ->
+    @playtime = 0
     if @element
       @element.loadVideoById
         videoId          : src
@@ -74,8 +75,6 @@ class YTPlayer extends Player
         params
         atts
       )
-
-    @playtime = 0
 
     # FIXME: carry MusiClock.state.time into startSeconds
 

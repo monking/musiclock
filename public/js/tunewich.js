@@ -473,8 +473,9 @@ YTPlayer = (function(_super) {
 
   YTPlayer.prototype.load = function(src) {
     var atts, params;
+    this.playtime = 0;
     if (this.element) {
-      this.element.loadVideoById({
+      return this.element.loadVideoById({
         videoId: src,
         startSeconds: 0,
         suggestedQuality: 'large'
@@ -486,9 +487,8 @@ YTPlayer = (function(_super) {
       atts = {
         id: this.options.id
       };
-      swfobject.embedSWF("http://www.youtube.com/v/" + src + "?enablejsapi=1&playerapiid=" + this.options.id + "&version=3&autoplay=1&loop=" + (this.options.loop ? '1' : '0'), this.options.replace, this.options.playerWidth, this.options.playerHeight, "8", null, null, params, atts);
+      return swfobject.embedSWF("http://www.youtube.com/v/" + src + "?enablejsapi=1&playerapiid=" + this.options.id + "&version=3&autoplay=1&loop=" + (this.options.loop ? '1' : '0'), this.options.replace, this.options.playerWidth, this.options.playerHeight, "8", null, null, params, atts);
     }
-    return this.playtime = 0;
   };
 
   YTPlayer.prototype.play = function() {

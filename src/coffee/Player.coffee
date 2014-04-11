@@ -64,7 +64,7 @@ class Player extends EventDispatcher
 
   load: (src) ->
     @playtime = 0
-    @seeking = true
+    @seeking = true # first timeupdate will be ignored
     @element.innerHTML = "<source src=\"#{@options.basePath}/#{src}\" />"
     @element.pause() if @element.pause
     @element.load()
