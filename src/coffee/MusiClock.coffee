@@ -578,7 +578,7 @@ class MusiClock
     @controls.minPlaytime = element.querySelector 'input[rel=min-playtime]'
     @controls.minPlaytimeValue = element.querySelector 'label[rel=min-playtime] .value'
     if @controls.minPlaytime
-      @controls.minPlaytime.onchange = -> self.setMinPlaytime getRangeLog(@, 4), false
+      @controls.minPlaytime.oninput = -> self.setMinPlaytime getRangeLog(@, 4), false
     @setMinPlaytime @state.minPlaytime
 
   updateControlState: (element, newState) ->

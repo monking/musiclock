@@ -796,7 +796,7 @@ MusiClock = (function() {
     this.controls.minPlaytime = element.querySelector('input[rel=min-playtime]');
     this.controls.minPlaytimeValue = element.querySelector('label[rel=min-playtime] .value');
     if (this.controls.minPlaytime) {
-      this.controls.minPlaytime.onchange = function() {
+      this.controls.minPlaytime.oninput = function() {
         return self.setMinPlaytime(getRangeLog(this, 4), false);
       };
     }
