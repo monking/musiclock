@@ -642,7 +642,7 @@ MusiClock = (function() {
         }
         self.state.time = player.currentTime;
         currentTrack = self.getTrack();
-        if (currentTrack.ab && !self.state.softSkip && ((self.state.repeat && self.state.single) || (self.state.minPlaytime && player.playtime < self.state.minPlaytime) || self.state.numActiveTracks === 1) && self.state.time >= currentTrack.ab[1]) {
+        if (self.isDesiredToLoop() && self.state.time >= currentTrack.ab[1]) {
           player.seek(currentTrack.ab[0]);
         }
         return self.updateTrackProgress();
@@ -652,7 +652,9 @@ MusiClock = (function() {
           return;
         }
         self.state.paused = false;
-        if (!self.state.single) {
+        if (self.isDesiredToLoop()) {
+          return self.seek(0);
+        } else {
           return self.nextTrack();
         }
       });
@@ -671,6 +673,17 @@ MusiClock = (function() {
       }).call(this));
     }
     return _results;
+  };
+
+  MusiClock.prototype.isDesiredToLoop = function() {
+    var currentTrack, player;
+    currentTrack = this.getTrack();
+    player = this.getCurrentPlayer();
+    if (currentTrack.ab && !this.state.softSkip && ((this.state.repeat && this.state.single) || (this.state.minPlaytime && player.playtime < this.state.minPlaytime) || this.state.numActiveTracks === 1)) {
+      return true;
+    } else {
+      return false;
+    }
   };
 
   MusiClock.prototype.saveState = function() {
@@ -1048,12 +1061,17 @@ MusiClock = (function() {
     trackDuration = currentPlayer.duration;
     totalPlaytime = trackDuration;
     if (this.state.minPlaytime > totalPlaytime && track.ab) {
-      tailDuration = trackDuration - track.ab[1];
-      loopDuration = track.ab[1] - track.ab[0];
+      if (track.ab === true) {
+        tailDuration = 0;
+        loopDuration = trackDuration;
+      } else {
+        tailDuration = trackDuration - track.ab[1];
+        loopDuration = track.ab[1] - track.ab[0];
+      }
       loopCount = Math.ceil((this.state.minPlaytime - trackDuration) / loopDuration);
       totalPlaytime = trackDuration + loopCount * loopDuration;
     }
-    progress = currentPlayer.playtime / totalPlaytime;
+    progress = this.state.softSkip ? 1 : currentPlayer.playtime / totalPlaytime;
     progressBar.style.width = "" + (progress * 100) + "%";
     currentTime = currentPlayer.currentTime / currentPlayer.duration;
     return currentTimeBar.style.width = "" + (currentTime * 100) + "%";

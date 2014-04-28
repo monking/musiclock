@@ -85,11 +85,7 @@ class MusiClock
 
         self.state.time = player.currentTime
         currentTrack = self.getTrack()
-        if currentTrack.ab and not self.state.softSkip and (
-          (self.state.repeat and self.state.single) or
-          (self.state.minPlaytime and player.playtime < self.state.minPlaytime) or
-          self.state.numActiveTracks is 1
-        ) and self.state.time >= currentTrack.ab[1]
+        if self.isDesiredToLoop() and self.state.time >= currentTrack.ab[1]
           player.seek currentTrack.ab[0]
 
         self.updateTrackProgress()
@@ -99,10 +95,25 @@ class MusiClock
 
         # FIXME: 'ended' should not affect `state.paused`, fix for 'pause' firing before 'ended'
         self.state.paused = false
-        self.nextTrack() if not self.state.single
+        if self.isDesiredToLoop() #ended when desired to loop, must be ab:true
+          self.seek 0
+        else
+          self.nextTrack()
 
     for type of @players
       connectPlayer(type, i) for player, i in @players[type]
+
+  isDesiredToLoop: ->
+    currentTrack = @getTrack()
+    player = @getCurrentPlayer()
+    if currentTrack.ab and not @state.softSkip and (
+      (@state.repeat and @state.single) or
+      (@state.minPlaytime and player.playtime < @state.minPlaytime) or
+      @state.numActiveTracks is 1
+    )
+      true
+    else
+      false
 
   saveState: ->
     if window.localStorage and JSON
@@ -369,12 +380,16 @@ class MusiClock
 
     totalPlaytime = trackDuration
     if @state.minPlaytime > totalPlaytime and track.ab
-      tailDuration = trackDuration - track.ab[1]
-      loopDuration = track.ab[1] - track.ab[0]
+      if track.ab is true
+        tailDuration = 0
+        loopDuration = trackDuration
+      else
+        tailDuration = trackDuration - track.ab[1]
+        loopDuration = track.ab[1] - track.ab[0]
       loopCount = Math.ceil((@state.minPlaytime - trackDuration) / loopDuration)
       totalPlaytime = trackDuration + loopCount * loopDuration
 
-    progress = currentPlayer.playtime / totalPlaytime
+    progress = if @state.softSkip then 1 else currentPlayer.playtime / totalPlaytime
     progressBar.style.width = "#{progress * 100}%"
 
     currentTime = currentPlayer.currentTime / currentPlayer.duration
