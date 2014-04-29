@@ -43,7 +43,8 @@ class YoutubePlayer extends Player
       oldTime = self.currentTime
       self.currentTime = self.element.getCurrentTime()
       if oldTime isnt self.currentTime
-        self.playtime += self.currentTime - oldTime if not self.seeking
+        if self.currentTime > oldTime and not self.seeking
+          self.playtime += self.currentTime - oldTime
         self.seeking = false
         self.dispatchEvent 'timeupdate'
 

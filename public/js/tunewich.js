@@ -456,7 +456,7 @@ YoutubePlayer = (function(_super) {
       oldTime = self.currentTime;
       self.currentTime = self.element.getCurrentTime();
       if (oldTime !== self.currentTime) {
-        if (!self.seeking) {
+        if (self.currentTime > oldTime && !self.seeking) {
           self.playtime += self.currentTime - oldTime;
         }
         self.seeking = false;
