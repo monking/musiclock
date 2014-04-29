@@ -398,14 +398,14 @@ Player = (function(_super) {
 
 })(EventDispatcher);
 
-var YTPlayer,
+var YoutubePlayer,
   __hasProp = {}.hasOwnProperty,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
-YTPlayer = (function(_super) {
-  __extends(YTPlayer, _super);
+YoutubePlayer = (function(_super) {
+  __extends(YoutubePlayer, _super);
 
-  YTPlayer.prototype.defaults = {
+  YoutubePlayer.prototype.defaults = {
     id: null,
     replace: null,
     container: null,
@@ -414,11 +414,11 @@ YTPlayer = (function(_super) {
     playerHeight: 350
   };
 
-  function YTPlayer(options) {
-    YTPlayer.__super__.constructor.call(this, options);
+  function YoutubePlayer(options) {
+    YoutubePlayer.__super__.constructor.call(this, options);
   }
 
-  YTPlayer.prototype.setElement = function(element) {
+  YoutubePlayer.prototype.setElement = function(element) {
     this.element = element;
     if (element) {
       this.attachHandlers();
@@ -427,7 +427,7 @@ YTPlayer = (function(_super) {
     }
   };
 
-  YTPlayer.prototype.attachHandlers = function() {
+  YoutubePlayer.prototype.attachHandlers = function() {
     var onTimeChange, self, stateHandlerName;
     self = this;
     stateHandlerName = "" + this.options.id + "StateHandler";
@@ -471,7 +471,7 @@ YTPlayer = (function(_super) {
     return this.currentTimeInterval = setInterval(onTimeChange, this.options.updateInterval);
   };
 
-  YTPlayer.prototype.load = function(src) {
+  YoutubePlayer.prototype.load = function(src) {
     var atts, params;
     this.playtime = 0;
     if (this.element) {
@@ -491,15 +491,15 @@ YTPlayer = (function(_super) {
     }
   };
 
-  YTPlayer.prototype.play = function() {
+  YoutubePlayer.prototype.play = function() {
     return this.element.playVideo();
   };
 
-  YTPlayer.prototype.pause = function() {
+  YoutubePlayer.prototype.pause = function() {
     return this.element.pauseVideo();
   };
 
-  YTPlayer.prototype.seek = function(seekTo) {
+  YoutubePlayer.prototype.seek = function(seekTo) {
     if (this.currentTime === seekTo) {
       return;
     }
@@ -510,18 +510,18 @@ YTPlayer = (function(_super) {
     }
   };
 
-  YTPlayer.prototype.setLoop = function(looped) {
+  YoutubePlayer.prototype.setLoop = function(looped) {
     return this.looped = looped;
   };
 
-  YTPlayer.prototype.setVolume = function(volume) {
+  YoutubePlayer.prototype.setVolume = function(volume) {
     this.volume = volume;
     if (this.element) {
       return this.element.setVolume(volume * 100);
     }
   };
 
-  YTPlayer.prototype.setMute = function(muted) {
+  YoutubePlayer.prototype.setMute = function(muted) {
     this.muted = muted;
     if (this.element) {
       return this.element.setVolume(muted != null ? muted : {
@@ -530,15 +530,15 @@ YTPlayer = (function(_super) {
     }
   };
 
-  YTPlayer.prototype.show = function() {
+  YoutubePlayer.prototype.show = function() {
     return toggleClass(document.getElementById(this.options.container), 'hidden', false);
   };
 
-  YTPlayer.prototype.hide = function() {
+  YoutubePlayer.prototype.hide = function() {
     return toggleClass(document.getElementById(this.options.container), 'hidden', true);
   };
 
-  return YTPlayer;
+  return YoutubePlayer;
 
 })(Player);
 
@@ -602,11 +602,11 @@ MusiClock = (function() {
         })
       ],
       youtube: [
-        new YTPlayer({
+        new YoutubePlayer({
           id: 'ytplayer0',
           replace: 'ytapiplayer0',
           container: 'ytcontainer0'
-        }), new YTPlayer({
+        }), new YoutubePlayer({
           id: 'ytplayer1',
           replace: 'ytapiplayer1',
           container: 'ytcontainer1'

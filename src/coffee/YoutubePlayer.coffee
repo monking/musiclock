@@ -1,4 +1,4 @@
-class YTPlayer extends Player
+class YoutubePlayer extends Player
   defaults:
     id             : null
     replace        : null

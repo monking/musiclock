@@ -51,11 +51,11 @@ class MusiClock
           basePath : @basePath
       ]
       youtube: [
-        new YTPlayer
+        new YoutubePlayer
           id        : 'ytplayer0'
           replace   : 'ytapiplayer0'
           container : 'ytcontainer0'
-        new YTPlayer
+        new YoutubePlayer
           id        : 'ytplayer1'
           replace   : 'ytapiplayer1'
           container : 'ytcontainer1'

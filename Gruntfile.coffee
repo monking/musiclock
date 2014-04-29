@@ -32,7 +32,7 @@ module.exports = (grunt) ->
           'src/Utils.js',
           'src/EventDispatcher.js',
           'src/Player.js',
-          'src/YTPlayer.js',
+          'src/YoutubePlayer.js',
           'src/MusiClock.js',
           'src/Main.js',
         ]
