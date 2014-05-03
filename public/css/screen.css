@@ -38,7 +38,7 @@ header.global nav {
 .controls input {
   vertical-align: middle;
 }
-.controls label .value {
+.controls .value {
   display: inline-block;
   min-width: 4.5em;
   padding-left: 0.5em;

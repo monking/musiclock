@@ -308,7 +308,7 @@ MusiClock = (function() {
       });
     };
     return document.body.onkeydown = function(event) {
-      if (event.altKey || event.ctrlKey || event.metaKey || /input/i.test(event.target.tagName)) {
+      if (event.altKey || event.ctrlKey || event.metaKey || 'INPUT' === event.target.tagName || event.target.hasAttribute('contenteditable')) {
         return true;
       }
       switch (event.keyCode) {
@@ -383,6 +383,9 @@ MusiClock = (function() {
           break;
         case 83:
           self.toggleSingle();
+          break;
+        case 84:
+          self.editPlaytime();
           break;
         case 187:
           self.upVolume();
@@ -749,6 +752,13 @@ MusiClock = (function() {
     });
   };
 
+  MusiClock.prototype.editPlaytime = function() {
+    if (this.controls.minPlaytimeValue) {
+      this.controls.minPlaytimeValue.focus();
+      return document.execCommand('selectAll', false, null);
+    }
+  };
+
   MusiClock.prototype.setListControls = function(element) {
     var self;
     self = this;
@@ -816,6 +826,34 @@ MusiClock = (function() {
     if (this.controls.minPlaytime) {
       this.controls.minPlaytime.oninput = function() {
         return self.setMinPlaytime(getRangeLog(this, 4), false);
+      };
+    }
+    if (this.controls.minPlaytimeValue) {
+      this.controls.minPlaytimeValue.onfocus = function() {
+        this.setAttribute('data-value', this.innerHTML);
+        return this.onkeydown = function(event) {
+          switch (event.keyCode) {
+            case 13:
+              this.blur();
+              break;
+            case 27:
+              this.innerHTML = this.attributes['data-value'].value;
+              this.blur();
+              break;
+            default:
+              return true;
+          }
+          return false;
+        };
+      };
+      this.controls.minPlaytimeValue.onblur = function() {
+        var time;
+        time = window.Time(this.innerHTML);
+        if (isNaN(time)) {
+          return this.innerHTML = this.attributes['data-value'].value;
+        } else {
+          return self.setMinPlaytime(time);
+        }
       };
     }
     return this.setMinPlaytime(this.state.minPlaytime);

@@ -254,7 +254,11 @@ class MusiClock
         playlist: @selectedOptions[0].value
 
     document.body.onkeydown = (event) ->
-      if event.altKey or event.ctrlKey or event.metaKey or /input/i.test event.target.tagName
+      if event.altKey or
+      event.ctrlKey or
+      event.metaKey or
+      'INPUT' is event.target.tagName or
+      event.target.hasAttribute 'contenteditable'
         return true; # allow form input and browser shortcuts
 
       switch event.keyCode
@@ -282,6 +286,7 @@ class MusiClock
         when 77                   then self.toggleMute()    # m
         when 82                   then self.toggleRepeat()  # r
         when 83                   then self.toggleSingle()  # s
+        when 84                   then self.editPlaytime()  # t
         when 187                  then self.upVolume()      # =
         when 189                  then self.downVolume()    # -
         else return true
@@ -537,6 +542,11 @@ class MusiClock
     @update
       muted: not @state.muted
 
+  editPlaytime: ->
+    if @controls.minPlaytimeValue
+      @controls.minPlaytimeValue.focus()
+      document.execCommand 'selectAll', false, null
+
   #
   # add listeners on control element's children, by class
   # called externally
@@ -594,6 +604,23 @@ class MusiClock
     @controls.minPlaytimeValue = element.querySelector 'label[rel=min-playtime] .value'
     if @controls.minPlaytime
       @controls.minPlaytime.oninput = -> self.setMinPlaytime getRangeLog(@, 4), false
+    if @controls.minPlaytimeValue
+      @controls.minPlaytimeValue.onfocus = ->
+        @setAttribute 'data-value', @innerHTML
+        @onkeydown = (event) ->
+          switch event.keyCode
+            when 13 then @blur() # ENTER
+            when 27 # ESCAPE
+              @innerHTML = @attributes['data-value'].value
+              @blur()
+            else return true
+          false
+      @controls.minPlaytimeValue.onblur = ->
+        time =  window.Time @innerHTML
+        if isNaN time
+          @innerHTML = @attributes['data-value'].value
+        else
+          self.setMinPlaytime time
     @setMinPlaytime @state.minPlaytime
 
   updateControlState: (element, newState) ->
