@@ -279,7 +279,7 @@ Player = (function(_super) {
       return self.dispatchEvent('ended');
     });
     return this.element.addEventListener('volumechange', function() {
-      if (this.fadeVolumeInterval !== null && (!this.muted || this.volume > 0)) {
+      if (!this.isFading() && (!this.muted || this.volume > 0)) {
         self.volume = this.volume;
         return self.dispatchEvent('volumechange');
       }
@@ -384,6 +384,10 @@ Player = (function(_super) {
     };
     clearInterval(this.fadeVolumeInterval);
     return this.fadeVolumeInterval = setInterval(fadeStep, Math.round(1000 / options.rate));
+  };
+
+  Player.prototype.isFading = function() {
+    return this.fadeVolumeInterval !== null;
   };
 
   Player.prototype.show = function() {

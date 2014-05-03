@@ -58,7 +58,7 @@ class Player extends EventDispatcher
       self.dispatchEvent 'ended'
 
     @element.addEventListener 'volumechange', ->
-      if @fadeVolumeInterval isnt null and (not @muted or @volume > 0)
+      if not @isFading() and (not @muted or @volume > 0)
         self.volume = @volume
         self.dispatchEvent 'volumechange'
 
@@ -145,6 +145,9 @@ class Player extends EventDispatcher
 
     clearInterval @fadeVolumeInterval
     @fadeVolumeInterval = setInterval(fadeStep, Math.round(1000 / options.rate))
+
+  isFading: ->
+    @fadeVolumeInterval isnt null
 
   show: ->
     @element.style.display = 'block'
