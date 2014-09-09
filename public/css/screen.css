@@ -81,6 +81,7 @@ section.welcome h1 {
   color: #FFF;
   text-shadow: 0 2px 5px #a41900;
   letter-spacing: -1pt;
+  position: relative;
 }
 section.welcome img {
   height: 150px;
@@ -89,6 +90,35 @@ section.welcome img {
   margin: 0 0.5em 0 0;
   transition-property: height left;
   transition-duration: 0.3s;
+}
+section.welcome .art {
+  position: absolute;
+  z-index: 0;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-repeat: no-repeat;
+  background-size: cover;
+  filter: progid:DXImageTransform.Microsoft.Alpha(Opacity=0);
+  opacity: 0;
+  -webkit-transition-property: opacity;
+  -moz-transition-property: opacity;
+  -o-transition-property: opacity;
+  transition-property: opacity;
+  -webkit-transition-duration: 1s;
+  -moz-transition-duration: 1s;
+  -o-transition-duration: 1s;
+  transition-duration: 1s;
+  -webkit-animation: art 60s infinite cubic-bezier(0.2, 0, 0.8, 1);
+  -moz-animation: art 60s infinite cubic-bezier(0.2, 0, 0.8, 1);
+  -ms-animation: art 60s infinite cubic-bezier(0.2, 0, 0.8, 1);
+  -o-animation: art 60s infinite cubic-bezier(0.2, 0, 0.8, 1);
+  animation: art 60s infinite cubic-bezier(0.2, 0, 0.8, 1);
+}
+section.welcome .art.visible {
+  filter: progid:DXImageTransform.Microsoft.Alpha(Opacity=20);
+  opacity: 0.2;
 }
 
 section.playlist {
@@ -209,5 +239,54 @@ audio {
   .controls {
     font-size: 24px;
     line-height: 60px;
+  }
+}
+@-webkit-keyframes art {
+  0%, 100% {
+    background-position: center top;
+  }
+
+  50% {
+    background-position: center bottom;
+  }
+}
+
+@-moz-keyframes art {
+  0%, 100% {
+    background-position: center top;
+  }
+
+  50% {
+    background-position: center bottom;
+  }
+}
+
+@-ms-keyframes art {
+  0%, 100% {
+    background-position: center top;
+  }
+
+  50% {
+    background-position: center bottom;
+  }
+}
+
+@-o-keyframes art {
+  0%, 100% {
+    background-position: center top;
+  }
+
+  50% {
+    background-position: center bottom;
+  }
+}
+
+@keyframes art {
+  0%, 100% {
+    background-position: center top;
+  }
+
+  50% {
+    background-position: center bottom;
   }
 }

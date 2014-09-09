@@ -722,7 +722,7 @@ MusiClock = (function() {
   };
 
   MusiClock.prototype.update = function(parameters, stateOnly) {
-    var activeTrack, currentPlayer, diff, drawRequired, drawWorthy, i, key, label, newTrackStates, playlist, track, trackLabels, trackState, _i, _j, _len, _len1, _ref;
+    var activeTrack, art, artURL, currentPlayer, diff, drawRequired, drawWorthy, i, key, label, newTrackStates, playlist, track, trackLabels, trackState, _i, _j, _len, _len1, _ref;
     drawWorthy = ["playlist"];
     if (!this.state) {
       this.state = parameters;
@@ -811,6 +811,12 @@ MusiClock = (function() {
       currentPlayer = this.players[this.currentPlayerType][this.currentPlayerIndex];
       currentPlayer.show();
       currentPlayer.load(track.src);
+      if (this.currentPlayerType === 'youtube') {
+        art = document.querySelector('.welcome .art');
+        artURL = "http://i.ytimg.com/vi/" + track.src + "/maxresdefault.jpg";
+        art.style.backgroundImage = "url(" + artURL + ")";
+      }
+      toggleClass(art, 'visible', this.currentPlayerType === 'youtube');
       this.toggleRepeat(this.state.repeat);
       this.toggleSingle(this.state.single);
       this.toggleShuffle(this.state.shuffle);

@@ -227,6 +227,15 @@ class MusiClock
       currentPlayer = @players[@currentPlayerType][@currentPlayerIndex]
       currentPlayer.show()
       currentPlayer.load track.src
+
+      if @currentPlayerType is 'youtube'
+        art = document.querySelector '.welcome .art'
+        # maxresdefault.jpg is not always present, but I prefer it to the letterboxed hqdefault.jpg
+        artURL = "http://i.ytimg.com/vi/#{track.src}/maxresdefault.jpg"
+        art.style.backgroundImage = "url(#{artURL})"
+
+      toggleClass art, 'visible', (@currentPlayerType is 'youtube')
+
       @toggleRepeat @state.repeat
       @toggleSingle @state.single
       @toggleShuffle @state.shuffle
