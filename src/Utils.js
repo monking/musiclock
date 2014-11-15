@@ -1,4 +1,4 @@
-var loadJSON, overloads, toggleClass,
+var encodeURIFragment, loadJSON, overloads, parseSerializedString, parseURIFragment, toggleClass,
   __slice = [].slice;
 
 overloads = function() {
@@ -32,6 +32,43 @@ loadJSON = function(url, successHandler) {
     return successHandler(data);
   };
   return request.send();
+};
+
+parseSerializedString = function(serialized) {
+  var chunk, i, output, pair, _i, _len, _ref;
+  if (serialized) {
+    output = {};
+    _ref = serialized.split('&');
+    for (i = _i = 0, _len = _ref.length; _i < _len; i = ++_i) {
+      chunk = _ref[i];
+      pair = chunk.split('=');
+      output[decodeURIComponent(pair[0])] = decodeURIComponent(pair[1]);
+    }
+  } else {
+    output = null;
+  }
+  return output;
+};
+
+parseURIFragment = function() {
+  return parseSerializedString(window.location.hash.replace(/^#/, ''));
+};
+
+encodeURIFragment = function(data) {
+  var key, value;
+  if (data) {
+    return ((function() {
+      var _results;
+      _results = [];
+      for (key in data) {
+        value = data[key];
+        _results.push("" + (encodeURIComponent(key)) + "=" + (encodeURIComponent(value)));
+      }
+      return _results;
+    })()).join('&');
+  } else {
+    return '';
+  }
 };
 
 toggleClass = function(element, className, override) {

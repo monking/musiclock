@@ -216,6 +216,12 @@ class MusiClock
             drawRequired = true
           @state[key] = parameters[key]
 
+    window.location.hash = '#' + encodeURIFragment
+      playlist: @state.playlist
+      track: @state.track
+      repeat: @state.repeat
+      shuffle: @state.shuffle
+
     @markupPlaylist() if drawRequired
 
     if drawRequired or "track" of parameters

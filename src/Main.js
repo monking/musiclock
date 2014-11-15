@@ -1,15 +1,15 @@
-window.onYouTubePlayerReady = function(playerId) {
-  return console.log(playerId);
-};
-
 window.onload = function() {
   return loadJSON('/library.json', function(data) {
-    var mc;
+    var mc, uriState;
+    uriState = parseURIFragment();
     mc = new MusiClock({
       data: data,
       repeat: true,
       controls: '.global nav.controls'
     });
+    if (uriState) {
+      mc.update(uriState);
+    }
     return window.mc = mc;
   });
 };

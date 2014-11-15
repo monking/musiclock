@@ -252,6 +252,12 @@ MusiClock = (function() {
         }
       }
     }
+    window.location.hash = '#' + encodeURIFragment({
+      playlist: this.state.playlist,
+      track: this.state.track,
+      repeat: this.state.repeat,
+      shuffle: this.state.shuffle
+    });
     if (drawRequired) {
       this.markupPlaylist();
     }

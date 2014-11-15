@@ -14,6 +14,26 @@ loadJSON = (url, successHandler) ->
     successHandler data
   request.send()
 
+parseSerializedString = (serialized) ->
+  if serialized
+    output = {}
+    for chunk, i in serialized.split '&'
+      pair = chunk.split '=' 
+      output[decodeURIComponent pair[0]] = decodeURIComponent pair[1]
+  else
+    output = null
+
+  return output
+
+parseURIFragment = ->
+  parseSerializedString window.location.hash.replace /^#/, ''
+
+encodeURIFragment = (data) ->
+  if data
+    ("#{encodeURIComponent key}=#{encodeURIComponent value}" for key, value of data).join '&'
+  else
+    ''
+
 toggleClass = (element, className, override) ->
   added = override
   classes = element.className.match(/([^\s]+)/g) or []
