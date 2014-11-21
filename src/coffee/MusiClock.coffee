@@ -219,6 +219,7 @@ class MusiClock
     window.location.hash = '#' + encodeURIFragment
       playlist: @state.playlist
       track: @state.track
+      minPlaytime: Math.round @state.minPlaytime
       repeat: @state.repeat
       shuffle: @state.shuffle
 

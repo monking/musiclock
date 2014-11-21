@@ -255,6 +255,7 @@ MusiClock = (function() {
     window.location.hash = '#' + encodeURIFragment({
       playlist: this.state.playlist,
       track: this.state.track,
+      minPlaytime: Math.round(this.state.minPlaytime),
       repeat: this.state.repeat,
       shuffle: this.state.shuffle
     });
