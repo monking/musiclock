@@ -9,6 +9,14 @@ header, section, footer {
   display: block;
 }
 
+a {
+  color: #de5a41;
+  text-decoration: none;
+}
+a:hover {
+  text-decoration: underline;
+}
+
 .wrap {
   width: 800px;
   max-width: 100%;
