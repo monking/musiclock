@@ -491,7 +491,7 @@ YoutubePlayer = (function(_super) {
       atts = {
         id: this.options.id
       };
-      return swfobject.embedSWF("http://www.youtube.com/v/" + src + "?enablejsapi=1&playerapiid=" + this.options.id + "&version=3&autoplay=1&loop=" + (this.options.loop ? '1' : '0'), this.options.replace, this.options.playerWidth, this.options.playerHeight, "8", null, null, params, atts);
+      return swfobject.embedSWF("https://www.youtube.com/v/" + src + "?enablejsapi=1&playerapiid=" + this.options.id + "&version=3&autoplay=1&loop=" + (this.options.loop ? '1' : '0'), this.options.replace, this.options.playerWidth, this.options.playerHeight, "8", null, null, params, atts);
     }
   };
 
@@ -813,7 +813,7 @@ MusiClock = (function() {
       currentPlayer.load(track.src);
       if (this.currentPlayerType === 'youtube') {
         art = document.querySelector('.welcome .art');
-        artURL = "http://i.ytimg.com/vi/" + track.src + "/maxresdefault.jpg";
+        artURL = "https://i.ytimg.com/vi/" + track.src + "/maxresdefault.jpg";
         art.style.backgroundImage = "url(" + artURL + ")";
       }
       toggleClass(art, 'visible', this.currentPlayerType === 'youtube');
@@ -1044,7 +1044,7 @@ MusiClock = (function() {
       currentTime = '<div class="current-time-bar"></div>';
       state = '<span class="state"></span>';
       title = "<h3>" + state + track.title + "</h3>";
-      source = "<a class=\"fa fa-youtube source\" href=\"http://youtube.com/watch?v=" + track.src + "\" target=\"_blank\"></a>";
+      source = "<a class=\"fa fa-youtube source\" href=\"https://youtube.com/watch?v=" + track.src + "\" target=\"_blank\"></a>";
       markup += "<article class=\"" + (trackClasses.join(" ")) + "\">" + progress + currentTime + title + source + "</article>";
     }
     list = document.getElementById('playlist');
